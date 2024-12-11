@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Button, ScrollView, Image } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MedicationReminderView from '../components/MedicationReminderView'
 import moment from 'moment';
 import 'moment/locale/ko'
+import { UserContext } from '../context/UserContext';
 
 moment.locale('ko')
 
@@ -20,6 +21,7 @@ const Home = () => {
   const [selectedDate, setSelectedDate] = useState(today);
   const [currentDate, setCurrentDate] = useState(today);
   const [weekDays, setWeekDays] = useState(getWeekDays(currentDate));
+  const user = useContext(UserContext);
 
   // 날짜 선택 핸들러
   const handleDayPress = (day) => {
@@ -45,7 +47,7 @@ const Home = () => {
               borderRadius:"50%",
             }}/>
         </View>
-        <Text style={styles.userText}>사용자</Text>
+        <Text style={styles.userText}>{user}</Text>
         <MaterialCommunityIcons name={'chevron-down'} style={{marginLeft:-1,paddingTop:2, fontSize:40, color:"grey"}}/>
       </View>
       <View style={styles.homeContents}>
@@ -91,8 +93,8 @@ const Home = () => {
           )}
         />
         <View style={styles.todayPillDescriptionContainer}>
+        
           <Text style={styles.descriptionText}>오늘 드셔야 할 약이에요!</Text>
-          <MaterialCommunityIcons name={'comment-alert'} style={{fontSize:40, padding:5}}></MaterialCommunityIcons>
         </View>
         <View style={styles.todayPillContainer}>
           <ScrollView>
