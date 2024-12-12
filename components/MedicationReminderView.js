@@ -1,79 +1,83 @@
 import React from "react";
-import { TouchableOpacity, Text, View, StyleSheet,Image } from "react-native";
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
-const MedicationReminderView = props => {
-    const isTaken = props.Taken
-    return(
-    <TouchableOpacity
-      style={{
-        backgroundColor: "#4B778D",
-        width:"96%",
-        height:150,
-        margin:"2%",
-        borderRadius: 8,
-      }}
-      onPress={() => alert("Click!")}
-    >
-        <View style={styles.topContainer}>
-            <Text
-                style={styles.timeText}>{props.time}</Text>
+const MedicationReminderView = ({ time, date, medications, onToggleTaken, onDelete  }) => {
+  return (
+    <View style={styles.container}>
+      {/* 상단 시간대 */}
+      <View style={styles.topContainer}>
+        <Text style={styles.timeText}>{time}</Text>
+        <MaterialCommunityIcons name="menu-open" style={styles.icon} />
+      </View>
+
+      {/* 하단 약 리스트 */}
+      <View style={styles.medicationsContainer}>
+        {medications.map((medication) => (
+          <TouchableOpacity
+            key={medication.id}
+            style={styles.medicationItem}
+            onPress={() => {
+                onToggleTaken(date, time, medication.id)
+                console.log(date)
+                console.log(time)
+                console.log(medication.id)}
+            } // 복용 여부 토글
+            onLongPress={() => {
+                onDelete(date, time, medication.id); // 약 삭제
+                console.log(`삭제됨: ${date}, ${time}, ${medication.id}`);
+            }}
+          >
+            
+            <Text style={styles.pillName}>{medication.medicineName}</Text>
+            <Text style={styles.pillName}>{medication.dose}알 복용</Text>
             <MaterialCommunityIcons
-                name={'menu-open'}
-                style={{
-                    fontSize:40,
-                    paddingRight:5,
-                }} />
-        </View>
-        <View style={styles.bottomContainer}>
-            <View style={styles.pillContainer}>
-                <Image
-                    source={props.pillImage}
-                    style={{
-                        padding:5,
-                        width:95,
-                        height:95,
-                    }}
-                />
-                <View style={styles.pillInfo}>
-                    <Text style={{fontSize: 24, color: "black" }}>{props.pillName}</Text>
-                </View>
-            </View>
-            <MaterialCommunityIcons
-                name={ isTaken ? "check-circle" : "check-circle-outline"}
-                style={{
-                    fontSize:40,
-                    color: isTaken ? "green" : "grey",
-                    margin:10
-                }}
+              name={
+                medication.isTaken ? "check-circle" : "check-circle-outline"
+              }
+              style={[
+                styles.checkIcon,
+                { color: medication.isTaken ? "green" : "grey" },
+              ]}
             />
-        </View>
-    </TouchableOpacity>
-    );
-}
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-    topContainer:{
-        flex:1.3, flexDirection:"row", justifyContent:"space-evenly", alignItems:"center", backgroundColor:"orange", borderTopLeftRadius:8, borderTopRightRadius:8
-    },
-    timeText:{
-        fontSize:25,
-        marginLeft:"40%",
-        marginRight:"auto",
-    },
-    bottomContainer:{
-        flex:3, flexDirection:"row", justifyContent:"space-between" ,alignItems:"center", backgroundColor:"white", borderBottomLeftRadius:8, borderBottomRightRadius:8
-    },
-    pillContainer:{
-        flexDirection:"row",
-        marginLeft:20
-    },
-    pillInfo:{
-        width:200,
-        padding:10,
-        paddingLeft:20
-    },
-
-})
+  container: {
+    width: "95%",
+    backgroundColor: "#4B778D",
+    marginVertical: 10,
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  topContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "orange",
+    padding: 10,
+  },
+  timeText: { fontSize: 24, color: "#fff" },
+  icon: { fontSize: 30, color: "#fff" },
+  medicationsContainer: {
+    backgroundColor: "#fff",
+    margin: 15,
+  },
+  medicationItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 15,
+    borderBottomColor: "grey",
+    borderBottomWidth: 1,
+  },
+  pillImage: { width: 40, height: 40, marginRight: 10 },
+  pillName: { flex: 1, fontSize: 25 },
+  checkIcon: { fontSize: 30 },
+});
 
 export default MedicationReminderView;

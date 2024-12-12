@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect  } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -11,6 +11,10 @@ import Home from './screens/Home';
 import Add from './screens/Add';
 import Settings from './screens/Settings';
 import { StatusBar } from 'expo-status-bar';
+import InputModal from './components/InputModal';
+import { MedicineContext } from './context/MedicineContext';
+import { MedicineProvider } from './context/MedicineContext';
+
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -33,7 +37,9 @@ const CustomAddButton = ({ onPress }) => (
 // 메인 탭 Navigator
 const MainTabs = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
+  const { MedicineSchedule } = useContext(MedicineContext);
   const [inputValue, setInputValue] = useState({});
+  const [medicineData, setMedicineData] = useState(null);
   
   return(
     <>
@@ -104,64 +110,26 @@ const MainTabs = ({ navigation }) => {
     </Tab.Navigator>
 
      {/* 모달 창 */}
-     <Modal
-        animationType="none"
-        transparent={true}
+     <InputModal
         visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>텍스트를 입력하세요</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="여기에 입력"
-              value={inputValue}
-              onChangeText={setInputValue}
-            />
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => {
-                  if (inputValue.trim() === '') {
-                    // 입력값이 비어있으면 경고창 표시
-                    Alert.alert(
-                      '입력 오류',
-                      '값을 입력해 주세요!',
-                      [{ text: '확인', style: 'cancel' }],
-                      { cancelable: true }
-                    );
-                  } else {
-                    console.log('입력값:', inputValue);
-                    setModalVisible(false);
-                    setInputValue(''); // 입력값 초기화
-                  }
-                }}
-              >
-                <Text style={styles.buttonText}>확인</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.buttonText}>취소</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setModalVisible(false)}
+        onSave={(data) => {
+        }}
+      />
     </UserContext.Provider>
   </>)
 };
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
-        <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <MedicineProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Login">
+          <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+          <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </MedicineProvider>
   );
 }
 
@@ -219,6 +187,16 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  addButton: {
+    backgroundColor: 'orange',
+    padding: 15,
+    borderRadius: 10,
+  },
+  addButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18,
   },
 });
 

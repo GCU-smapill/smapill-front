@@ -1,10 +1,11 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Button, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, ScrollView, Image } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MedicationReminderView from '../components/MedicationReminderView'
 import moment from 'moment';
 import 'moment/locale/ko'
 import { UserContext } from '../context/UserContext';
+import { MedicineContext } from '../context/MedicineContext';
 
 moment.locale('ko')
 
@@ -21,10 +22,14 @@ const Home = () => {
   const [selectedDate, setSelectedDate] = useState(today);
   const [currentDate, setCurrentDate] = useState(today);
   const [weekDays, setWeekDays] = useState(getWeekDays(currentDate));
-  const user = useContext(UserContext);
+  const user = useContext(UserContext); // 유저 이름 콘텍스트
+  const {medicineSchedule, updateMedicineSchedule } = useContext(MedicineContext)
+
+  //console.log("from home : ",JSON.stringify(medicineSchedule, null,2))
 
   // 날짜 선택 핸들러
   const handleDayPress = (day) => {
+    console.log(day)
     setSelectedDate(day);
   };
 
@@ -34,6 +39,118 @@ const Home = () => {
     setCurrentDate(newDate);
     setWeekDays(getWeekDays(newDate));
   };
+
+  const handleToggleTaken = (selectedDate, timeSlot, individualId) => {
+    console.log("이전 스케줄:", medicineSchedule);
+    console.log("선택된 날짜:", selectedDate);
+    console.log("시간대:", timeSlot);
+    console.log("약 ID:", individualId);
+  
+    // 새로운 스케줄 객체를 생성
+    const updatedSchedule = medicineSchedule;
+  
+    if (updatedSchedule[selectedDate] && updatedSchedule[selectedDate][timeSlot]) {
+      
+      updatedSchedule[selectedDate][timeSlot] = updatedSchedule[selectedDate][timeSlot].map(
+        (medication) =>
+          medication.id === individualId
+            ? { ...medication, isTaken: !medication.isTaken } // 복용 여부 토글
+            : medication
+      );
+    } else {
+      console.warn("해당 날짜 또는 시간대가 존재하지 않습니다.");
+      return;
+    }
+  
+    // 상태 업데이트 - 기존 상태와 새로운 스케줄을 병합
+    updateMedicineSchedule((prevSchedule) => ({
+      ...prevSchedule,
+      ...updatedSchedule,
+    }));
+  
+    console.log("최종 업데이트된 스케줄:", updatedSchedule);
+  };
+  
+  const confirmDelete = (date, time, medicationId) => {
+    Alert.alert(
+      "삭제 확인", // 타이틀
+      "이 약을 삭제할까요?", // 메시지
+      [
+        { text: "아니오", style: "cancel" }, // 취소 버튼
+        { 
+          text: "예", 
+          style: "destructive", 
+          onPress: () => handleDeleteMedication(date, time, medicationId) // 예를 누르면 삭제 함수 호출
+        }
+      ],
+      { cancelable: true } // 바깥 화면 터치 시 닫기
+    );
+  };
+
+  const handleDeleteMedication = (date, timeSlot, id) => {
+    
+    const updatedSchedule = medicineSchedule;
+    
+      if (updatedSchedule[date] && updatedSchedule[date][timeSlot]) {
+        // 해당 시간대에서 특정 ID의 약 제거
+        updatedSchedule[date][timeSlot] = updatedSchedule[date][timeSlot].filter(
+          (medication) => medication.id !== id
+        );
+  
+        // 시간대가 비어있으면 해당 시간대 삭제
+        if (updatedSchedule[date][timeSlot].length === 0) {
+          delete updatedSchedule[date][timeSlot];
+        }
+  
+        // 날짜가 비어있으면 해당 날짜 삭제
+        if (Object.keys(updatedSchedule[date]).length === 0) {
+          delete updatedSchedule[date];
+        }
+      }
+      
+      // 상태 업데이트 - 기존 상태와 새로운 스케줄을 병합
+      updateMedicineSchedule((prevSchedule) => ({
+        ...prevSchedule,
+        ...updatedSchedule,
+      }));
+      
+      // 상태 업데이트
+      return updatedSchedule;
+  }
+    
+  const renderMedicationViews = () => {
+    // 선택된 날짜의 약 데이터 가져오기
+    const selectedDateString = new Date(selectedDate).toLocaleDateString();
+    const dailyData = medicineSchedule[selectedDateString];
+  
+    // 데이터가 없으면 메시지 반환
+    if (!dailyData) {
+      return (
+        <View style={styles.noDateContainer}>
+          <Text style={styles.noDataText}>이 날은 복용할 약이 없습니다.</Text>
+        </View>
+      );
+    }
+  
+    // 시간대별로 MedicationReminderView 생성
+    return (
+      <ScrollView
+            contentContainerStyle={styles.scrollViewContent} 
+          >
+      {Object.keys(dailyData).map((time) => (
+          <MedicationReminderView
+          key={time} // 고유 키
+          date={selectedDateString}
+          time={time} // 시간대 전달
+          medications={dailyData[time]} // 같은 시간대의 약 리스트 전달
+          onToggleTaken={handleToggleTaken}
+          onDelete={confirmDelete}
+        />
+      ))}
+      </ScrollView>
+    )
+  };
+  
 
   return (
     <View style={styles.container}>
@@ -97,21 +214,7 @@ const Home = () => {
           <Text style={styles.descriptionText}>오늘 드셔야 할 약이에요!</Text>
         </View>
         <View style={styles.todayPillContainer}>
-          <ScrollView>
-            <MedicationReminderView
-              time={"08:00"}
-              pillImage={require('../components/medicine1.jpg')}
-              pillName={"고혈압약"}
-              Taken={true}/>
-            <MedicationReminderView
-              time={"12:00"}
-              pillImage={require('../components/medicine2.jpg')}
-              pillName={"로콜서방정500밀리그람"}
-              Taken={false}/>
-            {/*<Text style={styles.selectedDateText}>
-              선택된 날짜: {moment(selectedDate).format('YYYY-MM-DD')}
-            </Text>*/}
-          </ScrollView>
+            {renderMedicationViews()}
         </View>
         
       </View>
@@ -165,6 +268,18 @@ const styles = StyleSheet.create({
     paddingTop:5,
     flex:10,
     backgroundColor:"#e9ecef"
+  },
+  scrollViewContent: {
+    flexGrow: 1,           // ScrollView가 최소한으로 높이를 채우도록 설정
+    justifyContent: 'flex-start', // 수직 중앙 정렬
+    alignItems: 'center',    // 수평 중앙 정렬
+  },  
+  noDateContainer:{
+    marginTop:100,
+    alignItems:"center",
+  },
+  noDataText:{
+    fontSize:30
   },
   selectedDateText: { marginTop: 20, fontSize: 18, fontWeight: 'bold', textAlign: 'center' },
 });
