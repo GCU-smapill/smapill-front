@@ -24,7 +24,17 @@ const InputModal = ({ visible, onClose }) => {
   const [selectedTimeOptions, setSelectedTimeOptions] = useState([]);
   const { medicineSchedule, updateMedicineSchedule } = useContext(MedicineContext);
 
-  const timeOptions = ['기상직후', '아침', '점심', '저녁', '취침전'];
+  const timeOptions = ['wakeUp', 'morning', 'noon', 'evening', 'bedTime'];
+  const timeOptions1 = ['기상직후', '아침', '점심', '저녁', '취침전'];
+
+  const getKoreanLabel = (time) => {
+    if (time === 'wakeUp') return '기상직후';
+    if (time === 'morning') return '아침';
+    if (time === 'noon') return '점심';
+    if (time === 'evening') return '저녁';
+    if (time === 'bedTime') return '취침전';
+    return ''; // 예외 처리
+  };
 
   const getDatesBetween = (start, end) => {
     const dates = [];
@@ -123,7 +133,7 @@ const InputModal = ({ visible, onClose }) => {
       case 2:
         return (
           <>
-            <Text style={styles.label}>2단계: 복용 횟수 입력</Text>
+            <Text style={styles.label}>2단계: 복용량 입력 (알)</Text>
             <TextInput
               style={styles.input}
               placeholder="예: 3"
@@ -200,7 +210,7 @@ const InputModal = ({ visible, onClose }) => {
                     }
                 >
                     <Text style={{ fontSize: 25, color: selectedTimeOptions.includes(time) ? 'white' : 'black' }}>
-                    {time}
+                    {getKoreanLabel(time)}
                     </Text>
                 </TouchableOpacity>
                 ))}

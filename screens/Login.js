@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, TextInput, Image, StyleSheet, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 
 
 const Login = ({ navigation }) => {
@@ -10,18 +10,24 @@ const Login = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.bgOrange}>
-        <View style={styles.loginContainer}>
-          <Text style={styles.descriptionTop}>스마필에 오신 것을 환영합니다.</Text>
-          <Text style={styles.descriptionBottom}>스마트한 건강관리, 스마필과 함께</Text>
-          <TextInput placeholder="전화번호" style={styles.input} />
-          <TextInput placeholder="비밀번호" style={styles.input} secureTextEntry />
-          <TouchableOpacity title="Login" onPress={handleLogin} style={styles.loginBtn}>
-            <Text style={styles.loginBtnText}>로그인 하기</Text>
-          </TouchableOpacity>
-          <TouchableOpacity title="SignIn" onPress={handleLogin} style={styles.signInBtn}>
-            <Text style={styles.signInBtnText}>회원 가입</Text>
-          </TouchableOpacity>
-          
+        <View style={{width:"100%", height:"100%", alignItems:"center"}}>
+          <Image
+            source={require('../assets/icon.png')}
+            style={{marginTop:"30%", width:'90', height:"90", borderRadius:"30%"}}
+          />
+          <Text style={{fontSize:25, color:"white"}}>smapill</Text>
+          <View style={styles.loginContainer}>
+            <Text style={styles.descriptionTop}>스마필에 오신 것을 환영합니다.</Text>
+            <Text style={styles.descriptionBottom}>스마트한 건강관리, 스마필과 함께</Text>
+            <TextInput placeholder="아이디" style={styles.input} />
+            <TextInput placeholder="비밀번호" style={styles.input} secureTextEntry />
+            <TouchableOpacity title="Login" onPress={handleLogin} style={styles.loginBtn}>
+              <Text style={styles.loginBtnText}>로그인 하기</Text>
+            </TouchableOpacity>
+            <TouchableOpacity title="SignIn" onPress={handleLogin} style={styles.signInBtn}>
+              <Text style={styles.signInBtnText}>회원 가입</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </View>
@@ -31,8 +37,8 @@ const Login = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {flexDirection:"column", alignItems: 'center' },
   bgOrange: {width:"100%", height:"77%", marginTop:"-10", borderRadius:"10%", backgroundColor: '#FF9131', justifyContent:"center", alignItems:"center"},
-  loginContainer: {width:"90%", height:"90%", marginTop:"100%", borderRadius:"10%" ,backgroundColor:"white", justifyContent:"center", alignItems:"center"},
-  descriptionTop:{fontSize:20, fontWeight:600, marginTop:-25 ,marginBottom:0,},
+  loginContainer: {width:"90%", height:"90%", marginTop:"5%", borderRadius:"10%" ,backgroundColor:"white", justifyContent:"center", alignItems:"center"},
+  descriptionTop:{fontSize:20, fontWeight:600, marginTop:-35,marginBottom:0,},
   descriptionBottom:{fontSize:20, fontWeight:500, color:"grey", marginBottom:50,},
   input: { backgroundColor:"#dee2e6", borderRadius:5 ,width: '85%', height: 50, borderBottomWidth: 0, marginBottom: 10, paddingLeft:10, fontSize:18},
   loginBtn:{backgroundColor:"#FF9131", borderRadius:5 ,width: '85%', height: 50, borderBottomWidth: 0,marginBottom: 10 , justifyContent:"center", alignItems:"center"},

@@ -43,7 +43,7 @@ const MainTabs = ({ navigation }) => {
   
   return(
     <>
-    <UserContext.Provider value={"김진성"}>
+    <UserContext.Provider value={"홍길동"}>
     <StatusBar
       barStyle="dark-content"
       backgroundColor='orange'

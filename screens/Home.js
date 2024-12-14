@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, ScrollView, Image } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MedicationReminderView from '../components/MedicationReminderView'
@@ -6,6 +6,7 @@ import moment from 'moment';
 import 'moment/locale/ko'
 import { UserContext } from '../context/UserContext';
 import { MedicineContext } from '../context/MedicineContext';
+import * as Notifications from 'expo-notifications';
 
 moment.locale('ko')
 
@@ -25,7 +26,33 @@ const Home = () => {
   const user = useContext(UserContext); // 유저 이름 콘텍스트
   const {medicineSchedule, updateMedicineSchedule } = useContext(MedicineContext)
 
-  //console.log("from home : ",JSON.stringify(medicineSchedule, null,2))
+  useEffect(() => {
+    (async () => {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        alert('알림 권한이 거부되었습니다!');
+      }
+    })();
+  }, []);
+
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+
+  const sendNotification = async () => {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: '알림 제목 테스트',
+        body: '알림 내용 테스트',
+        sound: true,
+      },
+      trigger: null
+    });
+  };
 
   // 날짜 선택 핸들러
   const handleDayPress = (day) => {
@@ -128,10 +155,13 @@ const Home = () => {
       return (
         <View style={styles.noDateContainer}>
           <Text style={styles.noDataText}>이 날은 복용할 약이 없습니다.</Text>
+          <TouchableOpacity onPress={sendNotification}>
+            <Text style={{ fontSize: 18, color: '#007AFF', marginTop: 20 }}>알림 테스트 보내기</Text>
+          </TouchableOpacity>
         </View>
       );
     }
-  
+
     // 시간대별로 MedicationReminderView 생성
     return (
       <ScrollView
@@ -265,7 +295,6 @@ const styles = StyleSheet.create({
     fontWeight: 600,
   },
   todayPillContainer:{
-    paddingTop:5,
     flex:10,
     backgroundColor:"#e9ecef"
   },

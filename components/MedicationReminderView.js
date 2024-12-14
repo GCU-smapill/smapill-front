@@ -2,12 +2,21 @@ import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
+const getKoreanLabel = (time) => {
+  if (time === 'wakeUp') return '기상직후 (07:00)';
+  if (time === 'morning') return '아침 (08:00)';
+  if (time === 'noon') return '점심 (12:00)';
+  if (time === 'evening') return '저녁 (19:00)';
+  if (time === 'bedTime') return '취침전 (21:00)';
+  return ''; // 예외 처리
+};
+
 const MedicationReminderView = ({ time, date, medications, onToggleTaken, onDelete  }) => {
   return (
     <View style={styles.container}>
       {/* 상단 시간대 */}
       <View style={styles.topContainer}>
-        <Text style={styles.timeText}>{time}</Text>
+        <Text style={styles.timeText}>{getKoreanLabel(time)}</Text>
         <MaterialCommunityIcons name="menu-open" style={styles.icon} />
       </View>
 
@@ -50,7 +59,7 @@ const MedicationReminderView = ({ time, date, medications, onToggleTaken, onDele
 const styles = StyleSheet.create({
   container: {
     width: "95%",
-    backgroundColor: "#4B778D",
+    backgroundColor: "white",
     marginVertical: 10,
     borderRadius: 8,
     overflow: "hidden",
@@ -62,16 +71,17 @@ const styles = StyleSheet.create({
     backgroundColor: "orange",
     padding: 10,
   },
-  timeText: { fontSize: 24, color: "#fff" },
+  timeText: { fontSize: 24, fontWeight:500, color: "#fff",paddingLeft:"1%" },
   icon: { fontSize: 30, color: "#fff" },
   medicationsContainer: {
     backgroundColor: "#fff",
-    margin: 15,
+    margin: 10,
   },
   medicationItem: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 15,
+    height:70,
+    padding: 10,
     borderBottomColor: "grey",
     borderBottomWidth: 1,
   },
