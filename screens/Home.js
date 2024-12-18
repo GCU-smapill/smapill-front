@@ -4,9 +4,10 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import MedicationReminderView from '../components/MedicationReminderView'
 import moment from 'moment';
 import 'moment/locale/ko'
-import { UserContext } from '../context/UserContext';
 import { MedicineContext } from '../context/MedicineContext';
 import * as Notifications from 'expo-notifications';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { userState, medicationScheduleState } from '../state';
 
 moment.locale('ko')
 
@@ -23,7 +24,9 @@ const Home = () => {
   const [selectedDate, setSelectedDate] = useState(today);
   const [currentDate, setCurrentDate] = useState(today);
   const [weekDays, setWeekDays] = useState(getWeekDays(currentDate));
-  const user = useContext(UserContext); // 유저 이름 콘텍스트
+  const userInfo = useRecoilValue(userState);
+  const setMedicationScheduleInfo =useSetRecoilState(medicationScheduleState)
+  const medicationScheduleInfo = useRecoilValue(medicationScheduleState);
   const {medicineSchedule, updateMedicineSchedule } = useContext(MedicineContext)
 
   useEffect(() => {
@@ -46,8 +49,8 @@ const Home = () => {
   const sendNotification = async () => {
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: '알림 제목 테스트',
-        body: '알림 내용 테스트',
+        title: '약 드실 시간입니다!',
+        body: '꼭 잊지 말고 챙겨드세요!',
         sound: true,
       },
       trigger: null
@@ -68,10 +71,10 @@ const Home = () => {
   };
 
   const handleToggleTaken = (selectedDate, timeSlot, individualId) => {
-    console.log("이전 스케줄:", medicineSchedule);
+    /*console.log("이전 스케줄:", medicineSchedule);
     console.log("선택된 날짜:", selectedDate);
     console.log("시간대:", timeSlot);
-    console.log("약 ID:", individualId);
+    console.log("약 ID:", individualId);*/
   
     // 새로운 스케줄 객체를 생성
     const updatedSchedule = medicineSchedule;
@@ -95,7 +98,7 @@ const Home = () => {
       ...updatedSchedule,
     }));
   
-    console.log("최종 업데이트된 스케줄:", updatedSchedule);
+    // console.log("최종 업데이트된 스케줄:", updatedSchedule);
   };
   
   const confirmDelete = (date, time, medicationId) => {
@@ -155,9 +158,9 @@ const Home = () => {
       return (
         <View style={styles.noDateContainer}>
           <Text style={styles.noDataText}>이 날은 복용할 약이 없습니다.</Text>
-          <TouchableOpacity onPress={sendNotification}>
+          {/*<TouchableOpacity onPress={sendNotification}>
             <Text style={{ fontSize: 18, color: '#007AFF', marginTop: 20 }}>알림 테스트 보내기</Text>
-          </TouchableOpacity>
+          </TouchableOpacity>*/}
         </View>
       );
     }
@@ -180,7 +183,6 @@ const Home = () => {
       </ScrollView>
     )
   };
-  
 
   return (
     <View style={styles.container}>
@@ -194,7 +196,9 @@ const Home = () => {
               borderRadius:"50%",
             }}/>
         </View>
-        <Text style={styles.userText}>{user}</Text>
+        <Text style={styles.userText}>
+          {userInfo?.result?.name ? userInfo.result.name : "로딩중"}
+        </Text>
         <MaterialCommunityIcons name={'chevron-down'} style={{marginLeft:-1,paddingTop:2, fontSize:40, color:"grey"}}/>
       </View>
       <View style={styles.homeContents}>

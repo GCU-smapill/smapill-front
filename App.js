@@ -1,9 +1,8 @@
-import React, { useState, useContext, useEffect  } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Modal, TextInput, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { UserContext } from './context/UserContext'
+import { View, Modal, TextInput, ActivityIndicator, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import Login from './screens/Login';
@@ -11,9 +10,11 @@ import Home from './screens/Home';
 import Add from './screens/Add';
 import Settings from './screens/Settings';
 import { StatusBar } from 'expo-status-bar';
-import InputModal from './components/InputModal';
+import TextInputModal from './components/TextInputModal';
 import { MedicineContext } from './context/MedicineContext';
 import { MedicineProvider } from './context/MedicineContext';
+import AddModal from './components/AddModal';
+import { RecoilRoot } from 'recoil';
 
 
 const Stack = createStackNavigator();
@@ -35,38 +36,34 @@ const CustomAddButton = ({ onPress }) => (
 );
 
 // 메인 탭 Navigator
-const MainTabs = ({ navigation }) => {
-  const [modalVisible, setModalVisible] = useState(false);
-  const { MedicineSchedule } = useContext(MedicineContext);
-  const [inputValue, setInputValue] = useState({});
-  const [medicineData, setMedicineData] = useState(null);
+const MainTabs = () => {
+  const [addModalVisible, setAddModalVisible] = useState(false);
   
   return(
     <>
-    <UserContext.Provider value={"홍길동"}>
-    <StatusBar
-      barStyle="dark-content"
-      backgroundColor='orange'
-    />
-    <Tab.Navigator
-      screenOptions={{
-        tabBarStyle: {
-          height: 100, // 전체 탭 바 높이
-          backgroundColor: '#fff',
-          borderTopWidth: 0.5,
-          borderTopColor: '#ddd',
-        },
-        tabBarItemStyle: { height: 70 }, // 모든 탭 아이템의 높이 설정
-        tabBarActiveTintColor: 'orange',
-        tabBarInactiveTintColor: 'black',
-        tabBarLabelStyle: {
-          fontSize: 15,
-          fontWeight: '500',
-        },
-        headerShown: false,
-      }}
-    >
-      {/* 메인화면 */}
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor='orange'
+      />
+      <Tab.Navigator
+        screenOptions={{
+          tabBarStyle: {
+            height: 100, // 전체 탭 바 높이
+            backgroundColor: '#fff',
+            borderTopWidth: 0.5,
+            borderTopColor: '#ddd',
+          },
+          tabBarItemStyle: { height: 70 }, // 모든 탭 아이템의 높이 설정
+          tabBarActiveTintColor: 'orange',
+          tabBarInactiveTintColor: 'black',
+          tabBarLabelStyle: {
+            fontSize: 15,
+            fontWeight: '500',
+          },
+          headerShown: false,
+        }}
+      >
+        {/* 메인화면 */}
       <Tab.Screen
         name="메인화면"
         component={Home}
@@ -87,7 +84,7 @@ const MainTabs = ({ navigation }) => {
           tabBarButton: () => (
             <CustomAddButton
               onPress={() => {
-                setModalVisible(true);
+                setAddModalVisible(true);
                 console.log('추가 버튼 클릭!');
               }}
             />
@@ -108,28 +105,59 @@ const MainTabs = ({ navigation }) => {
         }}
       />
     </Tab.Navigator>
-
-     {/* 모달 창 */}
-     <InputModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        onSave={(data) => {
-        }}
-      />
-    </UserContext.Provider>
+    
+    <AddModal
+      visible={addModalVisible}
+      onRequestClose={() => setAddModalVisible(false)}
+      onClose={() => {
+        setAddModalVisible(false)
+      }}
+    />
   </>)
 };
 
 export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태
+  const [loading, setLoading] = useState(true); // 초기 로딩 상태
+
+  useEffect(() => {
+    // 예시: AsyncStorage 또는 SecureStore에서 로그인 토큰 확인
+    const checkLoginStatus = async () => {
+      try {
+        const token = null; // 예시: 저장된 토큰 불러오기
+        if (token) {
+          setIsLoggedIn(true);
+        }
+      } catch (error) {
+        console.log('자동 로그인 확인 실패:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
+  if (loading) {
+    // 초기 로딩 상태 표시
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#FF9131" />
+      </View>
+    );
+  }
+
   return (
-    <MedicineProvider>
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName="Login">
-          <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
-          <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </MedicineProvider>
+    <RecoilRoot>
+      <MedicineProvider>
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName="Login">
+            <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+            <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </MedicineProvider>
+    </RecoilRoot>
   );
 }
 

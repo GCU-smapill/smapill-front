@@ -14,7 +14,7 @@ import { MedicineContext } from '../context/MedicineContext';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Calendar } from 'react-native-calendars';
 
-const InputModal = ({ visible, onClose }) => {
+const TextInputModal = ({ visible, onClose }) => {
   const [currentStep, setCurrentStep] = useState(1); // 현재 단계
   const [medicineName, setMedicineName] = useState('');
   const [doseCount, setDoseCount] = useState('');
@@ -25,7 +25,6 @@ const InputModal = ({ visible, onClose }) => {
   const { medicineSchedule, updateMedicineSchedule } = useContext(MedicineContext);
 
   const timeOptions = ['wakeUp', 'morning', 'noon', 'evening', 'bedTime'];
-  const timeOptions1 = ['기상직후', '아침', '점심', '저녁', '취침전'];
 
   const getKoreanLabel = (time) => {
     if (time === 'wakeUp') return '기상직후';
@@ -263,7 +262,7 @@ const InputModal = ({ visible, onClose }) => {
   );
 };
 
-export default InputModal;
+export default TextInputModal;
 
 // 스타일 설정
 const styles = StyleSheet.create({
@@ -276,7 +275,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     width: '95%',
     height:'60%',
-    marginBottom:60,
+    marginBottom:0,
     backgroundColor: 'white',
     padding: 20,
     borderRadius: 10,

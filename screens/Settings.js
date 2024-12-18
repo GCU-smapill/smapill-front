@@ -1,11 +1,25 @@
 import React, { useContext } from 'react';
 import { View, Image, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { UserContext } from '../context/UserContext';
+import { useRecoilValue } from 'recoil';
+import { useSetRecoilState } from 'recoil';
+import { userState } from '../state';
+import { MedicineContext } from '../context/MedicineContext';
 
 const Settings = ({ navigation }) => {
+  const userInfo = useRecoilValue(userState);
+  const setUserInfo = useSetRecoilState(userState);
+  const { medicineSchedule ,updateMedicineSchedule } = useContext(MedicineContext);
   
-  const user = useContext(UserContext)
+  const handleLogout = () => {
+    navigation.replace('Login'); // 로그인 화면으로 이동
+    setUserInfo({}); // userInfo 초기화
+  };
+
+  const deleteAllSchedule = () =>{
+    updateMedicineSchedule("delete");
+    navigation.replace('Main'); // 로그인 화면으로 이동
+  }
 
   return(
   <View style={styles.container}>
@@ -26,7 +40,7 @@ const Settings = ({ navigation }) => {
           }}
         />
         <TouchableOpacity style={{justifyContent:"center", alignItems:"center"}}>
-          <Text style={{fontSize:20, fontWeight:600}}>{user}</Text>
+          <Text style={{fontSize:20, fontWeight:600}}>{userInfo?.result?.name ? userInfo.result.name : "로딩 중"}</Text>
           <Text style={{fontSize:18, fontWeight:500, marginTop:2, color:"grey"}}>개인정보 수정</Text>
         </TouchableOpacity>
       </View>
@@ -35,7 +49,16 @@ const Settings = ({ navigation }) => {
     <View style={styles.settingContainer}>
       <TouchableOpacity
         style={{flexDirection:"row", justifyContent:"space-between", alignItems:"center", height:60 ,backgroundColor:"white", borderBottomColor:"#dee2e6", borderBottomWidth:2}}
-        title="Logout" onPress={() => navigation.replace('Login')}>
+        title="Logout" onPress={deleteAllSchedule}>
+          <Text style={{fontSize:20, marginLeft:20, color:"black" }}>복용 일정 전체 삭제</Text>
+          <MaterialCommunityIcons
+            name='chevron-right'
+            style={{fontSize:50}}
+          />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={{flexDirection:"row", justifyContent:"space-between", alignItems:"center", height:60 ,backgroundColor:"white", borderBottomColor:"#dee2e6", borderBottomWidth:2}}
+        title="Logout" onPress={handleLogout}>
           <Text style={{fontSize:20, marginLeft:20, color:"red" }}>로그아웃</Text>
           <MaterialCommunityIcons
             name='chevron-right'

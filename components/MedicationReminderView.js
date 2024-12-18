@@ -28,18 +28,15 @@ const MedicationReminderView = ({ time, date, medications, onToggleTaken, onDele
             style={styles.medicationItem}
             onPress={() => {
                 onToggleTaken(date, time, medication.id)
-                console.log(date)
-                console.log(time)
-                console.log(medication.id)}
+              }
             } // 복용 여부 토글
             onLongPress={() => {
                 onDelete(date, time, medication.id); // 약 삭제
-                console.log(`삭제됨: ${date}, ${time}, ${medication.id}`);
             }}
           >
             
             <Text style={styles.pillName}>{medication.medicineName}</Text>
-            <Text style={styles.pillName}>{medication.dose}알 복용</Text>
+            <Text style={styles.pilldose}>{medication.dose}알 복용</Text>
             <MaterialCommunityIcons
               name={
                 medication.isTaken ? "check-circle" : "check-circle-outline"
@@ -81,12 +78,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     height:70,
+    marginTop:-1,
     padding: 10,
-    borderBottomColor: "grey",
+    borderColor: "grey",
+    borderTopWidth: 1,
     borderBottomWidth: 1,
   },
   pillImage: { width: 40, height: 40, marginRight: 10 },
-  pillName: { flex: 1, fontSize: 25 },
+  pillName: { flex: 2, fontSize: 20 },
+  pilldose:{ flex: 1, fontSize: 25 },
   checkIcon: { fontSize: 30 },
 });
 

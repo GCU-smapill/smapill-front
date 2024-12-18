@@ -23,6 +23,23 @@
     },
     "web": {
       "favicon": "./assets/icon.png"
-    }
+    },
+    "notification": {
+      "icon": "./assets/icon2.png",
+      "color": "#311b92",
+      "androidMode": "default",
+      "androidCollapsedTitle": "Updates from Colab.notes",
+      "iosDisplayInForeground": true
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon2.png",
+          "color": "#ffffff",
+          "defaultChannel": "default"
+        }
+      ]
+    ]
   }
 }

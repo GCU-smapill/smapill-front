@@ -9,6 +9,8 @@ export const MedicineProvider = ({ children }) => {
     // 복약 스케줄 업데이트 (기존 데이터 유지)
     const updateMedicineSchedule = (newData) => {
       setMedicineSchedule((prevSchedule) => {
+
+        if(newData !== "delete"){
         const updatedSchedule = { ...prevSchedule }; // 이전 스케줄 복사
   
         Object.keys(newData).forEach((date) => {
@@ -24,8 +26,10 @@ export const MedicineProvider = ({ children }) => {
             ];
           });
         });
-  
         return updatedSchedule; // 업데이트된 스케줄 반환
+        } else{
+          return {};
+        }
       });
     };
   
