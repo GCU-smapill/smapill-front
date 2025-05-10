@@ -3,16 +3,13 @@ import { View, TouchableOpacity, Text, StyleSheet, Dimensions } from 'react-nati
 import moment from 'moment';
 
 const screenWidth = Dimensions.get('window').width;
-const itemWidth = screenWidth / 7;
+const itemWidth = screenWidth / 8;
 
 const DaySelector = ({ weekDays, selectedDate, onSelect, today }) => {
   return (
     <View style={styles.container}>
       {weekDays.map((item) => (
-        <View key={item} style={{ width: itemWidth }}>
-          <View style={styles.dayDisplay}>
-            <Text style={styles.dayText}>{moment(item).format('ddd')}</Text>
-          </View>
+        <View key={item} style={{ width: itemWidth, alignContent:"center" }}>
           <TouchableOpacity
             style={[
               styles.dayContainer,
@@ -21,7 +18,10 @@ const DaySelector = ({ weekDays, selectedDate, onSelect, today }) => {
             ]}
             onPress={() => onSelect(item)}
           >
-            <Text style={styles.dateText}>{moment(item).format('DD')}</Text>
+            <View style={styles.dayDisplay}>
+              <Text key={item} style={[styles.dayText, item === selectedDate && styles.selectedDayFont]}>{moment(item).format('ddd')}</Text>
+            </View>
+            <Text key={item} style={[styles.dateText, item === selectedDate && styles.selectedDayFont ]}>{moment(item).format('DD')}</Text>
           </TouchableOpacity>
         </View>
       ))}
@@ -34,24 +34,27 @@ export default DaySelector;
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
+    justifyContent:"center",
+    gap: "5",
     backgroundColor: 'white',
   },
   dayDisplay: {
     justifyContent: 'center',
     alignItems: 'center',
-    height: 40,
+    height: 28,
+    marginTop: 5,
   },
   dayContainer: {
     justifyContent: 'center',
-    borderColor: "gray",
-    borderWidth: 1,
     alignItems: 'center',
-    height: 50,
+    borderRadius: "28%",
+    height: 63,
     backgroundColor: 'white',
     borderColor: '#D9D9D9',
   },
-  selectedDay: { backgroundColor: '#00adf5' },
-  todayHighlight: { borderColor: 'orange', borderWidth: 2 },
+  selectedDay: { backgroundColor: 'orange' },
+  selectedDayFont: { color: 'white' },
+  todayHighlight: { borderColor: '#00adf5', borderWidth: 2 },
   dayText: { fontSize: 22 },
-  dateText: { fontSize: 24 },
+  dateText: { fontSize: 20, paddingBottom: 9 },
 });
