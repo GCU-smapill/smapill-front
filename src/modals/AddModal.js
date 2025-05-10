@@ -1,4 +1,4 @@
-// components/AddModal.js
+// AddModal.js
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -8,16 +8,15 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
   Animated,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import TextInputModal from './TextInputModal';
-import CameraScreen from './CameraScreen';
+import { useNavigation } from '@react-navigation/native';  // ✅ 추가
 
 const AddModal = ({ visible, onClose }) => {
+  const navigation = useNavigation();
   const [isVisible, setIsVisible] = useState(visible);
-  const [textInputModalVisible, setTextInputModalVisible] = useState(false);
-  const [cameraVisible, setCameraVisible] = useState(false);
   const slideAnim = useState(new Animated.Value(300))[0];
 
   useEffect(() => {
@@ -40,67 +39,52 @@ const AddModal = ({ visible, onClose }) => {
   if (!isVisible) return null;
 
   return (
-    <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
-    >
-    <Modal transparent={true} animationType="fade">
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.modalBackground} />
-      </TouchableWithoutFeedback>
+      <Modal
+        transparent={true}
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <TouchableWithoutFeedback onPress={onClose}>
+          <View style={styles.modalBackground} />
+        </TouchableWithoutFeedback>
 
-      <Animated.View style={[styles.modalContainer, { transform: [{ translateY: slideAnim }] }]}>
-        <Text style={styles.title}>복용기록 만들기</Text>
+        <Animated.View style={[styles.modalContainer, { transform: [{ translateY: slideAnim }] }]}>
+          <Text style={styles.title}>복용기록 만들기</Text>
 
-        <TouchableOpacity
-          onPress={() => {
-            setTextInputModalVisible(true);
-          }}
-          style={styles.optionButton}
-        >
-          <MaterialCommunityIcons name="lead-pencil" size={30} color="black" />
-          <Text style={styles.optionText}>복약 스케쥴(직접 입력)</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              onClose();
+              navigation.navigate('TextInputModal');
+            }}
+            style={styles.optionButton}
+          >
+            <MaterialCommunityIcons name="lead-pencil" size={30} color="black" />
+            <Text style={styles.optionText}>복약 스케쥴(직접 입력)</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => {
-            setCameraVisible(true);
-          }}
-          style={styles.optionButton}
-        >
-          <MaterialCommunityIcons name="camera" size={30} color="black" />
-          <Text style={styles.optionText}>복약 스케쥴(처방전 사진)</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              onClose();
+              navigation.navigate('CameraScreen');
+            }}
+            style={styles.optionButton}
+          >
+            <MaterialCommunityIcons name="camera" size={30} color="black" />
+            <Text style={styles.optionText}>복약 스케쥴(처방전 사진)</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-          <Text style={styles.closeButtonText}>닫기</Text>
-        </TouchableOpacity>
-      </Animated.View>
-
-      <TextInputModal
-        visible={textInputModalVisible}
-        onClose={() => {
-          setTextInputModalVisible(false);
-          onClose();
-        }}
-      />
-
-      {cameraVisible && (
-        <CameraScreen
-          onClose={() => {
-            setCameraVisible(false);
-            onClose();
-          }}
-        />
-      )}
-    </Modal>
-    </KeyboardAvoidingView>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>닫기</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </Modal>
   );
 };
 
 export default AddModal;
 
 const styles = StyleSheet.create({
+  container: { flex: 1 },
   modalBackground: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',

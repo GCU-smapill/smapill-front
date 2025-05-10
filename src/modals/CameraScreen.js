@@ -1,25 +1,37 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { Camera, useCameraDevices } from 'react-native-vision-camera';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  Platform,
+  Linking,
+} from 'react-native';
+import { Camera, useCameraDevice } from 'react-native-vision-camera';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useNavigation } from '@react-navigation/native';
 import useScheduleStore from '../store/useScheduleStore';
 import useAuthStore from '../store/useAuthStore';
-import { captureRef } from 'react-native-view-shot';
 
-const CameraScreen = ({ onClose }) => {
+const CameraScreen = () => {
+  const navigation = useNavigation();   // ✅ 네비게이션 훅 추가
   const [hasPermission, setHasPermission] = useState(false);
-  const [cameraPosition, setCameraPosition] = useState('back');
   const cameraRef = useRef(null);
 
   const { updateMedicineSchedule } = useScheduleStore();
   const token = useAuthStore((state) => state.token);
-  const devices = useCameraDevices();
-  const device = devices[cameraPosition];
+  const device = useCameraDevice('back');
 
   useEffect(() => {
     (async () => {
-      const status = await Camera.requestCameraPermission();
-      setHasPermission(status === 'authorized');
+      const cameraStatus = await Camera.getCameraPermissionStatus();
+      if (cameraStatus !== 'granted') {
+        await Camera.requestCameraPermission();
+      }
+      const finalStatus = await Camera.getCameraPermissionStatus();
+      console.log('📸 Final camera status:', finalStatus);
+      setHasPermission(finalStatus === 'granted');
     })();
   }, []);
 
@@ -27,7 +39,6 @@ const CameraScreen = ({ onClose }) => {
     const dates = [];
     let currentDate = new Date(start);
     const finalDate = new Date(end);
-
     while (currentDate <= finalDate) {
       dates.push(new Date(currentDate).toLocaleDateString());
       currentDate.setDate(currentDate.getDate() + 1);
@@ -37,11 +48,14 @@ const CameraScreen = ({ onClose }) => {
 
   const handleCapture = async () => {
     try {
-      const photo = await cameraRef.current.takePhoto({
-        flash: 'off',
-      });
+      if (!cameraRef.current) {
+        Alert.alert('오류', '카메라가 아직 초기화되지 않았습니다.');
+        return;
+      }
 
-      const fileUri = `file://${photo.path}`;
+      const photo = await cameraRef.current.takePhoto({ flash: 'off' });
+      const fileUri = Platform.OS === 'android' ? `file://${photo.path}` : photo.path;
+
       const formData = new FormData();
       formData.append('file', {
         uri: fileUri,
@@ -67,12 +81,12 @@ const CameraScreen = ({ onClose }) => {
           Authorization: `Bearer ${token}`,
         },
       });
+
       const ocrData = await ocrResponse.json();
 
       const newSchedule = {};
       ocrData.forEach((medicine) => {
         const allDates = getDatesBetween(medicine.dates[0], medicine.dates[1]);
-
         allDates.forEach((date) => {
           if (!newSchedule[date]) newSchedule[date] = {};
           medicine.timeOptions.forEach((time) => {
@@ -88,19 +102,39 @@ const CameraScreen = ({ onClose }) => {
       });
 
       updateMedicineSchedule(newSchedule);
-      onClose();
+      navigation.goBack();   // ✅ 촬영 및 처리 완료 후 이전 화면으로 이동
     } catch (err) {
       console.error(err);
       Alert.alert('오류 발생', '사진 촬영 또는 업로드 중 문제가 발생했습니다.');
     }
   };
 
-  if (!device || !hasPermission) {
-    return <View style={styles.container}><Text>카메라 권한 또는 장치가 준비되지 않았습니다.</Text></View>;
+  if (!hasPermission) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.permissionText}>
+          카메라 권한이 없습니다. 설정에서 허용해주세요.
+        </Text>
+        <TouchableOpacity
+          onPress={() => Linking.openSettings()}
+          style={styles.permissionButton}
+        >
+          <Text style={{ color: 'white' }}>설정 열기</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (!device) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.permissionText}>카메라 장치를 찾는 중입니다...</Text>
+      </View>
+    );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.fullscreen}>
       <Camera
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
@@ -108,19 +142,26 @@ const CameraScreen = ({ onClose }) => {
         isActive={true}
         photo={true}
       />
+
       <View style={styles.controls}>
+        {/* 카메라 전환 버튼 - 현재 기능은 미구현 */}
         <TouchableOpacity
           style={styles.controlButton}
-          onPress={() => setCameraPosition(prev => prev === 'back' ? 'front' : 'back')}
+          onPress={() => Alert.alert('준비 중', '카메라 전환 기능은 아직 구현되지 않았습니다.')}
         >
           <MaterialCommunityIcons name="rotate-3d-variant" style={styles.icon} />
         </TouchableOpacity>
 
+        {/* 촬영 버튼 */}
         <TouchableOpacity style={styles.captureButton} onPress={handleCapture}>
-          <MaterialCommunityIcons name="checkbox-blank-circle-outline" style={{ fontSize: 70 }} />
+          <MaterialCommunityIcons
+            name="checkbox-blank-circle-outline"
+            style={{ fontSize: 70 }}
+          />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.controlButton} onPress={onClose}>
+        {/* 종료 버튼 */}
+        <TouchableOpacity style={styles.controlButton} onPress={() => navigation.goBack()}>
           <MaterialCommunityIcons name="window-close" style={styles.icon} />
         </TouchableOpacity>
       </View>
@@ -131,7 +172,28 @@ const CameraScreen = ({ onClose }) => {
 export default CameraScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'black' },
+  fullscreen: {
+    flex: 1,
+    backgroundColor: 'black',
+    position: 'relative',
+  },
+  container: {
+    flex: 1,
+    backgroundColor: 'black',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  permissionText: {
+    color: 'white',
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  permissionButton: {
+    padding: 10,
+    backgroundColor: 'orange',
+    borderRadius: 10,
+  },
   controls: {
     position: 'absolute',
     bottom: 40,

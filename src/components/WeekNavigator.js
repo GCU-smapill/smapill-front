@@ -7,14 +7,14 @@ import moment from 'moment';
 const WeekNavigator = ({ currentDate, onWeekChange }) => {
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => onWeekChange(-1)}>
+      <TouchableOpacity onPress={() => onWeekChange(-1)} style={styles.chevronBackground}>
         <MaterialCommunityIcons name="chevron-left" size={40} />
       </TouchableOpacity>
       <Text style={styles.text}>
         {moment(currentDate).startOf('isoWeek').format('YYYY-MM-DD')} ~{' '}
         {moment(currentDate).endOf('isoWeek').format('YYYY-MM-DD')}
       </Text>
-      <TouchableOpacity onPress={() => onWeekChange(1)}>
+      <TouchableOpacity onPress={() => onWeekChange(1)} style={styles.chevronBackground}>
         <MaterialCommunityIcons name="chevron-right" size={40} />
       </TouchableOpacity>
     </View>
@@ -24,6 +24,10 @@ const WeekNavigator = ({ currentDate, onWeekChange }) => {
 export default WeekNavigator;
 
 const styles = StyleSheet.create({
+  chevronBackground: {
+    backgroundColor: "grey",
+    borderRadius:"10%"
+  },
   container: {
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Modal,
   StyleSheet,
   Keyboard,
   TouchableWithoutFeedback,
@@ -16,6 +15,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { Calendar } from 'react-native-calendars';
 import useScheduleStore from '../store/useScheduleStore';
 import PushNotification from 'react-native-push-notification';
+import { useNavigation } from '@react-navigation/native';
 
 const timeSlotToHour = {
   wakeUp: 7,
@@ -25,7 +25,8 @@ const timeSlotToHour = {
   bedTime: 22,
 };
 
-const TextInputModal = ({ visible, onClose }) => {
+const TextInputModal = () => {
+  const navigation = useNavigation();
   const [currentStep, setCurrentStep] = useState(1);
   const [medicineName, setMedicineName] = useState('');
   const [doseCount, setDoseCount] = useState('');
@@ -62,106 +63,59 @@ const TextInputModal = ({ visible, onClose }) => {
     return dates;
   };
 
-  const scheduleLocalNotification = (dateObj, hour, title) => {
-    const notifyDate = new Date(dateObj);
-    notifyDate.setHours(hour);
-    notifyDate.setMinutes(0);
-    notifyDate.setSeconds(0);
-
-    PushNotification.localNotificationSchedule({
-      channelId: 'medicine-reminder',
-      title: '복약 알림',
-      message: `${title} 복약 시간입니다!`,
-      date: notifyDate,
-      allowWhileIdle: true,
-    });
-  };
-
   const handleSave = () => {
     if (!medicineName || selectedTimeOptions.length === 0 || !doseCount) {
       alert('모든 필드를 입력해주세요.');
       return;
     }
-  
+
     const allDates = getDatesBetween(startDate, endDate);
     const newSchedule = { ...medicineSchedule };
-  
+
     allDates.forEach((dateObj) => {
       const formattedDate = formatDate(dateObj);
       if (!newSchedule[formattedDate]) newSchedule[formattedDate] = {};
-  
+
       selectedTimeOptions.forEach((time) => {
         if (!newSchedule[formattedDate][time]) newSchedule[formattedDate][time] = [];
-  
+
         const medicineEntry = {
           id: new Date().getTime() + Math.random(),
           medicineName,
           isTaken: false,
           dose: doseCount,
         };
-  
+
         newSchedule[formattedDate][time].push(medicineEntry);
-  
-        // 📌 1. 실제 알림 예약
-        const notifyDate = new Date(dateObj);
-        notifyDate.setHours(timeSlotToHour[time]);
-        notifyDate.setMinutes(0);
-        notifyDate.setSeconds(0);
-  
+
         PushNotification.localNotificationSchedule({
           channelId: 'medicine-reminder',
           title: '복약 알림',
           message: `${medicineName} 복용할 시간입니다.`,
-          date: notifyDate,
+          date: new Date(dateObj.setHours(timeSlotToHour[time], 0, 0)),
           allowWhileIdle: true,
-        });
-  
-        // ✅ 2. 테스트용 즉시 알림 추가
-        PushNotification.localNotification({
-          channelId: 'medicine-reminder',
-          title: '⏱ 테스트용 알림',
-          message: `${medicineName} 복약 알림이 예약되었습니다!`, // 알림 확인용
         });
       });
     });
-  
+
     updateMedicineSchedule(newSchedule);
-    resetInputs();
-    onClose();
+    navigation.goBack();
   };
 
   const validateStep = () => {
     if (currentStep === 1 && medicineName.trim().length === 0) {
       return '약 이름을 입력해주세요.';
     }
-  
     if (currentStep === 2) {
       const dose = Number(doseCount);
       if (!doseCount || isNaN(dose) || dose <= 0) {
         return '복용 횟수를 숫자로 입력해주세요.';
       }
     }
-  
     if (currentStep === 5 && selectedTimeOptions.length === 0) {
       return '복용 시간을 하나 이상 선택해주세요.';
     }
-  
     return null;
-  };
-  
-
-  const resetInputs = () => {
-    setMedicineName('');
-    setDoseCount('');
-    setStartDate(new Date());
-    setEndDate(new Date());
-    setSelectedTimeOptions([]);
-    setCurrentStep(1);
-  };
-
-  const handleClose = () => {
-    resetInputs();
-    onClose();
   };
 
   const dismissKeyboard = () => {
@@ -203,14 +157,7 @@ const TextInputModal = ({ visible, onClose }) => {
               current={formatDate(startDate)}
               onDayPress={(day) => setStartDate(new Date(day.dateString))}
               markedDates={{
-                [formatDate(startDate)]: {
-                  selected: true,
-                  selectedColor: 'orange',
-                },
-              }}
-              theme={{
-                todayTextColor: 'red',
-                arrowColor: 'orange',
+                [formatDate(startDate)]: { selected: true, selectedColor: 'orange' },
               }}
             />
           </>
@@ -223,14 +170,7 @@ const TextInputModal = ({ visible, onClose }) => {
               current={formatDate(endDate)}
               onDayPress={(day) => setEndDate(new Date(day.dateString))}
               markedDates={{
-                [formatDate(endDate)]: {
-                  selected: true,
-                  selectedColor: 'orange',
-                },
-              }}
-              theme={{
-                todayTextColor: 'red',
-                arrowColor: 'orange',
+                [formatDate(endDate)]: { selected: true, selectedColor: 'orange' },
               }}
             />
           </>
@@ -269,80 +209,71 @@ const TextInputModal = ({ visible, onClose }) => {
   };
 
   return (
-    <Modal transparent visible={visible} animationType="fade">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
-      >
-        <TouchableWithoutFeedback onPress={dismissKeyboard}>
-          <ScrollView contentContainerStyle={styles.modalOverlay} keyboardShouldPersistTaps="handled">
-            <View style={styles.modalContainer}>
-              <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-                <MaterialCommunityIcons name="close" size={30} color="black" />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1, backgroundColor: '#fff' }}
+    >
+      <TouchableWithoutFeedback onPress={dismissKeyboard}>
+        <ScrollView contentContainerStyle={styles.pageContainer} keyboardShouldPersistTaps="handled">
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <MaterialCommunityIcons name="arrow-left" size={30} color="black" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>복약 정보 입력</Text>
+          </View>
+
+          <Text style={styles.stepTitle}>Step {currentStep} / 5</Text>
+          {renderStep()}
+
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                const error = validateStep();
+                if (error) {
+                  alert(error);
+                  return;
+                }
+                currentStep === 5 ? handleSave() : setCurrentStep(currentStep + 1);
+              }}
+            >
+              <Text style={styles.buttonText}>{currentStep === 5 ? '저장' : '다음'}</Text>
+            </TouchableOpacity>
+            {currentStep > 1 && (
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: '#ccc' }]}
+                onPress={() => setCurrentStep(currentStep - 1)}
+              >
+                <Text style={[styles.buttonText, { color: '#000' }]}>이전</Text>
               </TouchableOpacity>
-
-              <Text style={styles.title}>약 정보 입력 ({currentStep}/5)</Text>
-              <View style={{ flex: 2 }}>{renderStep()}</View>
-
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={styles.button}
-                  onPress={() => {
-                    const error = validateStep();
-                    if (error) {
-                      alert(error);
-                      return;
-                    }
-                    currentStep === 5 ? handleSave() : setCurrentStep(currentStep + 1);
-                  }}
-                >
-                  <Text style={styles.buttonText}>{currentStep === 5 ? '저장' : '다음'}</Text>
-                </TouchableOpacity>
-                {currentStep > 1 && (
-                  <TouchableOpacity
-                    style={[styles.button, { backgroundColor: '#ccc' }]}
-                    onPress={() => setCurrentStep(currentStep - 1)}
-                  >
-                    <Text style={[styles.buttonText, { color: '#000' }]}>이전</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </Modal>
+            )}
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
 export default TextInputModal;
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flexGrow: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  modalContainer: {
-    width: '95%',
-    minHeight: '60%',
-    backgroundColor: 'white',
+  pageContainer: {
     padding: 20,
-    borderRadius: 10,
   },
-  closeButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
   },
-  title: {
-    fontSize: 20,
+  headerTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
+    marginLeft: 10,
+  },
+  stepTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 10,
   },
   label: {
     fontSize: 20,
@@ -370,11 +301,11 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row-reverse',
     justifyContent: 'space-between',
-    marginTop: 20,
+    marginTop: 30,
   },
   button: {
     backgroundColor: 'orange',
-    padding: 10,
+    padding: 12,
     borderRadius: 5,
     width: '45%',
     alignItems: 'center',

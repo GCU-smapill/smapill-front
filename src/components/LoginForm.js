@@ -1,7 +1,5 @@
-// components/LoginForm.js
 import React, { useState } from 'react';
 import {
-  View,
   TextInput,
   TouchableOpacity,
   Text,
@@ -12,20 +10,28 @@ import useStore from '../store/useStore';
 import { loginAPI } from '../api/loginAPI';
 
 const LoginForm = ({ onSuccess }) => {
-  const setUser = useStore((state) => state.setUser);
-  const addUser = useStore((state) => state.addUser);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const login = useStore((state) => state.login);
+  const addUser = useStore((state) => state.addUser)
+  const users = useStore((state) => state.users);
+
+  const [email, setEmail] = useState('jskim6335@naver.com');
+  const [password, setPassword] = useState('6335asdf');
 
   const handleLogin = async () => {
     try {
       const res = await loginAPI(email, password);
-
-      // 로그인 성공 시
-      setUser(res.user);          // 로그인 상태 저장
-      addUser(res.user.name);     // 사용자 목록에도 추가
-
-      onSuccess?.();              // 로그인 성공 후 처리 (navigation 등)
+  
+      // 1️⃣ 로그인 상태 저장
+      login(res.user);
+  
+      // 2️⃣ users 배열에 사용자 추가 (중복 방지)
+      const exists = users.find(u => u.id === res.user.id);
+      if (!exists) {
+        addUser(res.user);   // user 객체 그대로 추가
+      }
+  
+      // 3️⃣ 성공 콜백 실행
+      onSuccess?.();
     } catch (error) {
       Alert.alert('로그인 실패', error.message);
     }

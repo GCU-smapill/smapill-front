@@ -7,7 +7,10 @@ export const loginAPI = async (email, password) => {
         user: {
           id: 1,
           name: '김진성',
-          email: 'jskim6335@naver.com',
+          guardians: [
+            { id: 'g1', name: '엄마', phone: '010-1234-5678' }
+          ],
+          schedule: {},
         },
       };
     } else {
