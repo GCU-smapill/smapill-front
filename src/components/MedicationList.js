@@ -72,7 +72,10 @@ const MedicationList = ({ selectedDate }) => {
 export default MedicationList;
 
 const styles = StyleSheet.create({
-  scrollContainer: { paddingVertical: 10, alignItems: 'center' },
+  scrollContainer: { 
+    paddingVertical: 10, 
+    alignItems: 'center',
+  },
   noDataContainer: { marginTop: 100, alignItems: 'center' },
   noDataText: { fontSize: 20, color: '#555' },
 });

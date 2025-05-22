@@ -37,6 +37,9 @@ const styles = StyleSheet.create({
     justifyContent:"center",
     gap: "5",
     backgroundColor: 'white',
+    paddingBottom: 15,
+    borderBottomColor:"#ddd",
+    borderBottomWidth: 1,
   },
   dayDisplay: {
     justifyContent: 'center',

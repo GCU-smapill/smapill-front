@@ -12,6 +12,8 @@ const TabIcon = ({ name, color, size }) => (
   <MaterialCommunityIcons name={name} color={color} size={size} />
 );
 
+const EmptyScreen = () => null;
+
 const MainTabs = () => {
   const [isModalVisible, setModalVisible] = useState(false);
 
@@ -23,7 +25,7 @@ const MainTabs = () => {
       <Tab.Navigator
         screenOptions={{
           tabBarStyle: {
-            height: 85,
+            height: 75,
             backgroundColor: '#fff',
             borderTopWidth: 1,
             borderTopColor: '#ddd',
@@ -42,14 +44,14 @@ const MainTabs = () => {
           name="메인화면"
           component={ScheduleScreen}
           options={{
-            tabBarIconStyle: { width: 50, height: 50 },
-            tabBarIcon: ({ color, size }) => <TabIcon name="home" color={color} size={45} />,
+            tabBarIconStyle: { width: 50, height: 35 },
+            tabBarIcon: ({ color, size }) => <TabIcon name="home" color={color} size={38} />,
           }}
         />
 
         <Tab.Screen
           name="AddButton"
-          component={() => null}
+          component={EmptyScreen}
           options={{
             tabBarButton: (props) => (
               <View style={styles.middleWrapper}>
@@ -58,7 +60,7 @@ const MainTabs = () => {
                   style={styles.customButton}
                   onPress={openModal}
                 >
-                  <Text style={{ fontSize: 24, color: 'white' }}>＋</Text>
+                  <Text style={{ fontSize: 30, color: 'white' }}>＋</Text>
                 </TouchableOpacity>
               </View>
             ),
@@ -69,8 +71,8 @@ const MainTabs = () => {
           name="설정"
           component={SettingsScreen}
           options={{
-            tabBarIconStyle: { width: 50, height: 50 },
-            tabBarIcon: ({ color, size }) => <TabIcon name="cog" color={color} size={45} />,
+            tabBarIconStyle: { width: 50, height: 35 },
+            tabBarIcon: ({ color, size }) => <TabIcon name="cog" color={color} size={33} />,
           }}
         />
       </Tab.Navigator>
@@ -90,12 +92,13 @@ const styles = StyleSheet.create({
     paddingTop: '6%',
   },
   customButton: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 90,
+    height: 90,
+    borderRadius: "50%",
     backgroundColor: 'orange',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 25,
   },
 });
 

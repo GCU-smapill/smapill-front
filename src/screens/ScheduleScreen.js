@@ -87,6 +87,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 99,
   },
-  header: { padding: 10, backgroundColor: 'white', borderBottomWidth: 1, borderColor: '#ddd' },
+  header: {
+    padding: 10,
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderColor: '#ddd' },
   headerText: { fontSize: 22, fontWeight: '600' },
 });

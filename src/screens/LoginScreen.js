@@ -23,6 +23,10 @@ const LoginScreen = ({ navigation }) => {
     });
   };
 
+  const onSignUp = () => {
+    navigation.navigate('SignUp')
+  }
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -41,7 +45,7 @@ const LoginScreen = ({ navigation }) => {
                 <View style={styles.loginContainer}>
                   <Text style={styles.descriptionTop}>스마필에 오신 것을 환영합니다.</Text>
                   <Text style={styles.descriptionBottom}>스마트한 건강관리, 스마필과 함께</Text>
-                  <LoginForm onSuccess={onSuccess} />
+                  <LoginForm onSuccess={{onSuccess,onSignUp}} />
                 </View>
               </View>
             </View>

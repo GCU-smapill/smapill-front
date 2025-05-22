@@ -7,12 +7,16 @@ import {
   Alert,
 } from 'react-native';
 import useStore from '../store/useStore';
-import { loginAPI } from '../api/loginAPI';
+import { loginAPI } from '../apis/loginAPI';
+import { useNavigation } from '@react-navigation/native';
+import SignUpScreen from '../screens/SignUpScreen';
 
 const LoginForm = ({ onSuccess }) => {
   const login = useStore((state) => state.login);
   const addUser = useStore((state) => state.addUser)
   const users = useStore((state) => state.users);
+
+  const navigation = useNavigation();
 
   const [email, setEmail] = useState('jskim6335@naver.com');
   const [password, setPassword] = useState('6335asdf');
@@ -31,11 +35,15 @@ const LoginForm = ({ onSuccess }) => {
       }
   
       // 3️⃣ 성공 콜백 실행
-      onSuccess?.();
+      onSuccess.onSuccess();
     } catch (error) {
       Alert.alert('로그인 실패', error.message);
     }
   };
+
+  const handleSignUp = () => {
+    onSuccess.onSignUp()
+  }
 
   return (
     <>
@@ -54,6 +62,9 @@ const LoginForm = ({ onSuccess }) => {
       />
       <TouchableOpacity onPress={handleLogin} style={styles.loginBtn}>
         <Text style={styles.loginBtnText}>로그인 하기</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={handleSignUp} style={styles.signUpBtn}>
+        <Text style={styles.signUpBtnText}>회원가입 하기</Text>
       </TouchableOpacity>
     </>
   );
@@ -83,6 +94,22 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
   },
+  signUpBtn: {
+    backgroundColor: 'white',
+    borderRadius: 5,
+    borderColor: "#FF9131",
+    borderWidth: 1,
+    width: '85%',
+    height: 50,
+    marginBottom: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  signUpBtnText: {
+    fontSize: 25,
+    color: '#FF9131',
+    fontWeight: '600',
+  }
 });
 
 export default LoginForm;

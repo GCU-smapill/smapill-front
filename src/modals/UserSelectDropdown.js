@@ -1,112 +1,229 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, StyleSheet } from 'react-native';
-import useStore from '../store/useStore';
+"use client"
+
+import { useState } from "react"
+import { View, Text, TouchableOpacity, TextInput, FlatList, StyleSheet } from "react-native"
+import useStore from "../store/useStore"
+import Icon from "react-native-vector-icons/MaterialCommunityIcons"
 
 const UserSelectDropdown = ({ onClose }) => {
-  const loggedInAccount = useStore(state => state.loggedInAccount);
-  const users = useStore(state => state.users);
-  const currentUserId = useStore(state => state.currentUserId);
-  const setCurrentUser = useStore(state => state.setCurrentUser);
-  const addUser = useStore(state => state.addUser);
+  const loggedInAccount = useStore((state) => state.loggedInAccount)
+  const users = useStore((state) => state.users)
+  const currentUserId = useStore((state) => state.currentUserId)
+  const setCurrentUser = useStore((state) => state.setCurrentUser)
+  const addUser = useStore((state) => state.addUser)
 
-  const [newUserName, setNewUserName] = useState('');
+  const [newUserName, setNewUserName] = useState("")
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
-  // 🔹 보호자인 경우만 사용자 목록 표시
-  if (!loggedInAccount) return null;
+  if (!loggedInAccount) return null
 
   const handleUserChange = (id) => {
-    setCurrentUser(id);
-    onClose();
-  };
+    setCurrentUser(id)
+    onClose()
+  }
 
   const handleAddUser = () => {
     if (newUserName.trim()) {
-      addUser(newUserName.trim());
-      setNewUserName('');
-      onClose();
+      addUser({ name: newUserName.trim(), id: Date.now() })
+      setNewUserName("")
+      onClose()
     }
-  };
+  }
+
+  const filteredUsers = searchQuery
+    ? users.filter((user) => user.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : users
 
   return (
     <View style={styles.dropdown}>
-      <Text style={styles.title}>관리할 사용자 선택</Text>
-      
-      <FlatList
-        data={users}
-        renderItem={({ item }) => (
+      <View style={styles.header}>
+        <Text style={styles.title}>사용자 전환</Text>
+        <Text style={styles.subtitle}>사용자를 선택하여 변경하세요</Text>
+      </View>
+
+      {isSearching ? (
+        <View style={styles.searchContainer}>
+          <Icon name="magnify" size={20} color="#666" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="사용자 검색..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoFocus
+          />
           <TouchableOpacity
-            style={[
-              styles.userItem,
-              item.id === currentUserId && styles.userItemActive,
-            ]}
-            onPress={() => handleUserChange(item.id)}
+            onPress={() => {
+              setIsSearching(false)
+              setSearchQuery("")
+            }}
           >
-            <Text>{item.name}</Text>
+            <Icon name="close" size={20} color="#666" />
           </TouchableOpacity>
-        )}
-        ListEmptyComponent={<Text>등록된 사용자가 없습니다.</Text>}
+        </View>
+      ) : (
+        <TouchableOpacity style={styles.searchButton} onPress={() => setIsSearching(true)}>
+          <Icon name="magnify" size={20} color="#666" />
+          <Text style={styles.searchButtonText}>사용자 검색...</Text>
+        </TouchableOpacity>
+      )}
+
+      <FlatList
+        data={filteredUsers}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => {
+          const isActive = item.id === currentUserId
+          return (
+            <TouchableOpacity
+              style={[styles.userItem, isActive && styles.activeItem]}
+              onPress={() => handleUserChange(item.id)}
+            >
+              <View style={styles.userInfo}>
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarText}>{item.name.charAt(0)}</Text>
+                </View>
+                <Text style={styles.userText}>{item.name}</Text>
+              </View>
+              {isActive && <Icon name="check" color="#4285F4" size={20} />}
+            </TouchableOpacity>
+          )
+        }}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>{searchQuery ? "검색 결과가 없습니다." : "등록된 사용자가 없습니다."}</Text>
+          </View>
+        }
+        style={styles.list}
       />
 
-      <TextInput
-        placeholder="새 사용자 이름"
-        value={newUserName}
-        onChangeText={setNewUserName}
-        style={styles.input}
-      />
-      <TouchableOpacity onPress={handleAddUser} style={styles.addButton}>
-        <Text style={{ color: 'white' }}>사용자 추가</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
-        <Text style={{ color: 'gray' }}>닫기</Text>
+      <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+        <Text style={styles.closeText}>닫기</Text>
       </TouchableOpacity>
     </View>
-  );
-};
+  )
+}
 
-export default UserSelectDropdown;
+export default UserSelectDropdown
 
 const styles = StyleSheet.create({
   dropdown: {
-    position: 'absolute',
+    position: "absolute",
     top: 65,
     left: 10,
-    width: 220,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    zIndex: 100,
+    width: 280,
+    backgroundColor: "white",
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 5,
+    padding: 16,
+    zIndex: 999,
+  },
+  header: {
+    marginBottom: 16,
   },
   title: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#111",
+  },
+  subtitle: {
     fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 10,
+    color: "#666",
+    marginTop: 4,
+  },
+  searchButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 12,
+  },
+  searchButtonText: {
+    color: "#666",
+    marginLeft: 8,
+    fontSize: 15,
+  },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 12,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    padding: 0,
+  },
+  list: {
+    maxHeight: 300,
   },
   userItem: {
-    padding: 8,
-    borderBottomWidth: 1,
-    borderColor: '#eee',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    backgroundColor: "#f9f9f9",
   },
-  userItemActive: {
-    backgroundColor: '#e0ffe0',
+  activeItem: {
+    backgroundColor: "#edf7ff",
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 6,
-    borderRadius: 6,
-    marginTop: 10,
+  userInfo: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-  addButton: {
-    backgroundColor: '#4CAF50',
-    padding: 8,
-    borderRadius: 6,
-    marginTop: 10,
-    alignItems: 'center',
+  avatar: {
+    width: 45,
+    height: 45,
+    borderRadius: "50%",
+    backgroundColor: "#4285F4",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
   },
-  cancelButton: {
-    alignItems: 'center',
-    marginTop: 5,
+  avatarText: {
+    color: "white",
+    fontSize: 18,
+    lineHeight: 18,
+    textAlign:"center",
+    fontWeight: "600",
   },
-});
+  userText: {
+    fontSize: 20,
+    lineHeight: 20,
+    textAlign:"center",
+    fontWeight: "500",
+  },
+  emptyContainer: {
+    padding: 16,
+    alignItems: "center",
+  },
+  emptyText: {
+    fontStyle: "italic",
+    color: "#888",
+    textAlign: "center",
+  },
+  closeButton: {
+    alignItems: "center",
+    marginTop: 15,
+    paddingVertical: 6,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+  },
+  closeText: {
+    color: "#4285F4",
+    fontSize: 20,
+    fontWeight: "600",
+  },
+})

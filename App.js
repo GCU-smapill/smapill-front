@@ -10,6 +10,7 @@ import CameraScreen from './src/modals/CameraScreen';
 import TextInputModal from './src/modals/TextInputModal';
 import GuardianRegisterScreen from './src/screens/GuardianRegisterScreen';
 import GuardianManageScreen from './src/screens/GuardianManageScreen';
+import SignUpScreen from './src/screens/SignUpScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -52,6 +53,7 @@ const App = () => {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="MainTabs" component={MainTabs} />
         <Stack.Screen name="CameraScreen" component={CameraScreen} />
         <Stack.Screen name="TextInputModal" component={TextInputModal} />
