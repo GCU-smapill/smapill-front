@@ -1,20 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { postSignup } from '../apis/userAPi';
 
 const SignUpScreen = ({ navigation }) => {
+  const [userId, setUserId] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [isValid, setIsValid] = useState(false);
-  const [errors, setErrors] = useState({ name: '', email: '', password: '' });
+  const [errors, setErrors] = useState({ userId: '', name: '', email: '', password: '', phoneNumber: '' });
 
   const validate = () => {
     let valid = true;
-    const newErrors = { name: '', email: '', password: '' };
+    const newErrors = { userId: '', name: '', email: '', password: '', phoneNumber: '' };
 
     const nameRegex = /^[ㄱ-ㅎㅏ-ㅣ가-힣]{1,20}$/;
     const emailRegex = /^\w+@\w+\.\w+(\.\w+)?$/;
     const passwordRegex = /^[a-zA-Z0-9~!@#$%^&*()]{8,30}$/;
+    const phoneRegex = /^010\d{8}$/;
+    const userIdRegex = /^[a-zA-Z0-9_.-]{4,20}$/;
+
+    if (!userIdRegex.test(userId)) {
+      newErrors.userId = '아이디는 영문, 숫자, 특수문자(._-) 포함 4~20자여야 합니다';
+      valid = false;
+    }
 
     if (!nameRegex.test(name)) {
       newErrors.name = '이름은 1~20자의 한글로 입력해주세요';
@@ -31,6 +41,11 @@ const SignUpScreen = ({ navigation }) => {
       valid = false;
     }
 
+    if (!phoneRegex.test(phoneNumber)) {
+      newErrors.phoneNumber = '휴대폰 번호는 010으로 시작하는 11자리 숫자여야 합니다';
+      valid = false;
+    }
+
     setErrors(newErrors);
     setIsValid(valid);
     return valid;
@@ -38,12 +53,30 @@ const SignUpScreen = ({ navigation }) => {
 
   useEffect(() => {
     validate();
-  }, [name, email, password]);
+  }, [userId, name, email, password, phoneNumber]);
 
+  const handleRegister = async () => {
+    if (!validate()) return;
 
-  const handleRegister = () => {
-    if (validate()) {
-      alert('회원가입 성공! (추후 서버 연동 예정)');
+    try {
+      const response = await postSignup({
+        userId,
+        name,
+        email,
+        password,
+        phoneNumber,
+      });
+
+      console.log("✅ 서버 응답 데이터:", response);
+      alert("회원가입 성공! 로그인 페이지로 이동합니다.");
+      navigation.navigate('Login');
+    } catch (error) {
+      if (error.response?.status === 409) {
+        alert('이미 존재하는 이메일 또는 아이디입니다.');
+      }
+
+      console.log("회원가입 실패", error);
+      alert("회원가입 실패! 다시 시도해주세요.");
     }
   };
 
@@ -54,9 +87,18 @@ const SignUpScreen = ({ navigation }) => {
 
       <TextInput
         style={styles.input}
+        placeholder="아이디"
+        value={userId}
+        onChangeText={setUserId}
+        onBlur={validate}
+      />
+      {errors.userId !== '' && <Text style={styles.errorText}>{errors.userId}</Text>}
+
+      <TextInput
+        style={styles.input}
         placeholder="이름 (한글)"
         value={name}
-        onChangeText={name => setName(name)}
+        onChangeText={setName}
         onBlur={validate}
       />
       {errors.name !== '' && <Text style={styles.errorText}>{errors.name}</Text>}
@@ -65,7 +107,7 @@ const SignUpScreen = ({ navigation }) => {
         style={styles.input}
         placeholder="이메일 주소"
         value={email}
-        onChangeText={email => setEmail(email)}
+        onChangeText={setEmail}
         onBlur={validate}
         keyboardType="email-address"
         autoCapitalize="none"
@@ -77,10 +119,20 @@ const SignUpScreen = ({ navigation }) => {
         placeholder="비밀번호"
         secureTextEntry
         value={password}
-        onChangeText={password => setPassword(password)}
+        onChangeText={setPassword}
         onBlur={validate}
       />
       {errors.password !== '' && <Text style={styles.errorText}>{errors.password}</Text>}
+
+      <TextInput
+        style={styles.input}
+        placeholder="휴대폰 번호 (예: 01012345678)"
+        value={phoneNumber}
+        onChangeText={setPhoneNumber}
+        keyboardType="number-pad"
+        onBlur={validate}
+      />
+      {errors.phoneNumber !== '' && <Text style={styles.errorText}>{errors.phoneNumber}</Text>}
 
       <TouchableOpacity 
         style={[styles.registerButton, !isValid && { backgroundColor: '#ccc' }]}
@@ -97,7 +149,7 @@ const SignUpScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack() }>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Text style={styles.backButtonText}>← 돌아가기</Text>
       </TouchableOpacity>
     </View>
@@ -105,6 +157,7 @@ const SignUpScreen = ({ navigation }) => {
 };
 
 export default SignUpScreen;
+
 
 const styles = StyleSheet.create({
   container: {

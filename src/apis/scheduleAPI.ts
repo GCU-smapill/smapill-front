@@ -24,8 +24,10 @@ export const patchSchedule = async (scheduleId: string) => {
 };
 
 // 복용 일정 조회 API
-export const getSchedule = async () => {
-    const { data } = await axiosInstance.get('/schedule/');
-   
-    return data;
-};
+export const getSchedule = async (scheduleDate: string) => {
+  const { data } = await axiosInstance.get('/schedule', {
+    params: { scheduleDate },
+  });
+
+  return data;
+}

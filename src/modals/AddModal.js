@@ -20,6 +20,15 @@ const AddModal = ({ visible, onClose }) => {
   const slideAnim = useState(new Animated.Value(300))[0];
 
   useEffect(() => {
+    console.log('🟡 isVisible:', isVisible);
+  }, [isVisible]);
+
+  useEffect(() => {
+    console.log('🟢 slideAnim 값:', slideAnim._value); // 애니메이션 상태 확인
+  }, [slideAnim]);
+
+
+  useEffect(() => {
     if (visible) {
       setIsVisible(true);
       Animated.timing(slideAnim, {
@@ -97,6 +106,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
+    zIndex: 100, 
   },
   title: {
     fontSize: 24,

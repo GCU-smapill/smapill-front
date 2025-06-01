@@ -1,17 +1,22 @@
 // components/UserProfile.js
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 
 const UserProfile = ({ name }) => {
+  const navigation = useNavigation();
+
   return (
     <View style={styles.container}>
       <Image
         source={require('../assets/default_user.jpg')}
         style={styles.image}
       />
-      <TouchableOpacity style={styles.textContainer}>
+      <TouchableOpacity
+        style={styles.textContainer}
+        onPress={() => navigation.navigate('UserDetailProfileScreen')}>
         <Text style={styles.nameText}>{name ?? '로딩 중'}</Text>
-        <Text style={styles.editText}>개인정보 수정</Text>
+        <Text style={styles.editText}>상세정보 보기</Text>
       </TouchableOpacity>
     </View>
   );

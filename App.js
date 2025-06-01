@@ -11,6 +11,7 @@ import TextInputModal from './src/modals/TextInputModal';
 import GuardianRegisterScreen from './src/screens/GuardianRegisterScreen';
 import GuardianManageScreen from './src/screens/GuardianManageScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
+import UserDetailProfileScreen from './src/screens/UserDetailProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -59,6 +60,7 @@ const App = () => {
         <Stack.Screen name="TextInputModal" component={TextInputModal} />
         <Stack.Screen name="GuardianRegister" component={GuardianRegisterScreen} />
         <Stack.Screen name="GuardianManage" component={GuardianManageScreen} />
+        <Stack.Screen name="UserDetailProfileScreen" component={UserDetailProfileScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

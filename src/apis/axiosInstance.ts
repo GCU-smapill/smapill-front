@@ -11,7 +11,10 @@ interface CustomInternalAxiosRequestConfig extends InternalAxiosRequestConfig {
 let refreshPromise: Promise<string> | null = null;
 
 export const axiosInstance = axios.create({
-  baseURL: 'https://your-api.com',
+  baseURL: 'http://158.180.64.214:8080/',
+  headers: {
+    'Content-Type': 'application/json',
+  },
   timeout: 5000,
 });
 

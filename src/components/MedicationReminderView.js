@@ -31,17 +31,29 @@ const MedicationReminderView = ({ time, date, medications, onToggleTaken, onDele
               onPress={() => onToggleTaken(date, time, medication.id)}
               onLongPress={() => onDelete(date, time, medication.id)}
             >
-              <Text style={styles.pillName}>{medication.medicineName}</Text>
-              <Text style={styles.pilldose}>{medication.dose}알 복용</Text>
-              <MaterialCommunityIcons
-                name={
-                  medication.isTaken ? "check-circle" : "checkbox-blank-circle-outline"
-                }
-                style={[
-                  styles.checkIcon,
-                  { color: medication.isTaken ? "green" : "grey" },
-                ]}
-              />
+              <View style={{flex: 1, display:"flex", flexDirection:"row", alignItems:"center",}}>
+                  <MaterialCommunityIcons
+                    name={
+                      "pill"
+                    }
+                    style={
+                      styles.pillIcon
+                    }
+                  />
+                  <Text style={styles.pillName}>{medication.medicineName}</Text>
+              </View>
+              <View style={{display:"flex", flexDirection:"row", alignItems:"center"}}>
+                <Text style={styles.pilldose}>{medication.dose}알 복용</Text>
+                <MaterialCommunityIcons
+                  name={
+                    medication.isTaken ? "check-circle" : "checkbox-blank-circle-outline"
+                  }
+                  style={[
+                    styles.checkIcon,
+                    { color: medication.isTaken ? "green" : "grey" },
+                  ]}
+                />
+              </View>
             </TouchableOpacity>
 
             {medications.length - 1 !== i && (
@@ -87,17 +99,20 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderRadius: 20,
     borderTopLeftRadius: 0,
-    padding: 10,
+    padding: 5,
   },
   medicationItem: {
+    display:"flex",
     flexDirection: "row",
+    justifyContent:"space-between",
     alignItems: "center",
     height:70,
     padding: 10,
   },
   pillImage: { width: 40, height: 40, marginRight: 10 },
-  pillName: { flex: 1.5, fontSize: 33, fontWeight: 600, paddingBottom:7 },
-  pilldose:{ flex: 1, fontSize: 30, fontWeight: 600, paddingBottom:7 },
+  pillIcon: { fontSize: 45, paddingRight: 7, },
+  pillName: { fontSize: 33, fontWeight: 500, paddingBottom:10 },
+  pilldose:{ fontSize: 30, fontWeight: 600, paddingBottom:7, paddingRight: 7},
   checkIcon: { fontSize: 38 },
 });
 

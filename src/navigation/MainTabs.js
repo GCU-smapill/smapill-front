@@ -17,7 +17,8 @@ const EmptyScreen = () => null;
 const MainTabs = () => {
   const [isModalVisible, setModalVisible] = useState(false);
 
-  const openModal = () => setModalVisible(true);
+  const openModal = () => {
+    setModalVisible(true)};
   const closeModal = () => setModalVisible(false);
 
   return (

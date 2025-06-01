@@ -1,68 +1,57 @@
 import { create } from 'zustand';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getUserInfo } from '../apis/userAPi';
 
-const useStore = create((set) => ({
-  // 모든 사용자 리스트
-  users: [
-  ],
-
-  // 현재 로그인된 계정 (user or guardian)
+const useStore = create((set, get) => ({
+  accessToken: null,
   loggedInAccount: null,
+  currentUserInfo: null,
+  users: [],
 
-  // 현재 관리 중인 사용자 (복약 일정용)
-  currentUserId: 1,
+  // 🔹 accessToken 저장
+  setToken: async (token) => {
+    await AsyncStorage.setItem('accessToken', token);
+    set({ accessToken: token });
+  },
 
-  // 🔹 로그인 처리 (사용자 or 보호자)
-  login: (account) => set({ loggedInAccount: account }),
+  // 🔹 앱 시작 시 토큰 로딩
+  loadToken: async () => {
+    const token = await AsyncStorage.getItem('accessToken');
+    if (token) set({ accessToken: token });
+    return token;
+  },
 
-  logout: () => set({ loggedInAccount: null }),
+  // 🔹 로그아웃
+  logout: async () => {
 
-  // 🔹 사용자 전환
-  setCurrentUser: (id) => set({ currentUserId: id }),
+    await AsyncStorage.removeItem('accessToken');
+    set({
+      accessToken: null,
+      loggedInAccount: null,
+      currentUserId: null,
+      users: [],
+    });
+  },
 
-  // 🔹 사용자 추가 (객체 그대로 추가)
-  addUser: (userObj) =>
-    set((state) => ({
-      users: [...state.users, userObj],
-  })),
+  // 🔹 로그인 후 사용자 정보 + 복약 일정 로딩
+  fetchAndSetUserInfo: async () => {
+    const user = (await getUserInfo()).result; // { userId, name, createdAt }
+    //const today = new Date().toISOString().split('T')[0];
+    //const schedule = (await getSchedule(today)).result;
+
+    const fullUser = {
+      id: user.userId,
+      name: user.name,
+    };
+
+    set({
+      loggedInAccount: fullUser,
+      users: [fullUser],
+      currentUserId: fullUser.id,
+    });
+  },
 
 
-  // 🔹 보호자 등록 (로그인 후 등록)
-  addGuardian: (userId, guardianInfo) =>
-    set((state) => ({
-      users: state.users.map(user =>
-        user.id === userId
-          ? { ...user, guardians: [...user.guardians, guardianInfo] }
-          : user
-      )
-    })),
-
-  // 🔹 보호자 수정
-  updateGuardian: (userId, guardianId, updatedInfo) =>
-    set((state) => ({
-      users: state.users.map(user =>
-        user.id === userId
-          ? {
-              ...user,
-              guardians: user.guardians.map(g =>
-                g.id === guardianId ? { ...g, ...updatedInfo } : g
-              )
-            }
-          : user
-      )
-    })),
-
-  // 🔹 보호자 삭제
-  removeGuardian: (userId, guardianId) =>
-    set((state) => ({
-      users: state.users.map(user =>
-        user.id === userId
-          ? {
-              ...user,
-              guardians: user.guardians.filter(g => g.id !== guardianId)
-            }
-          : user
-      )
-    })),
 }));
 
 export default useStore;

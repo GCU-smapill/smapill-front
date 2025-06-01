@@ -1,21 +1,69 @@
-import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import useStore from '../store/useStore';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { getDependentInfo } from '../apis/userLinkAPI'; // 경로는 실제 위치에 맞게 수정
+import { Alert } from 'react-native';
+import { deleteUserLink } from '../apis/userLinkAPI'; // 실제 경로에 맞게 수정
 
 const GuardianManageScreen = () => {
   const navigation = useNavigation();
-  const { users, currentUserId } = useStore();
-  const currentUser = users.find(u => u.id === currentUserId);
+  const [guardians, setGuardians] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const guardians = currentUser?.guardians || [];
+  useEffect(() => {
+    const fetchGuardians = async () => {
+      try {
+        const response = await getDependentInfo();
+        const result = response.result;
+
+        console.log("피보호자 정보 Array", result)
+
+        if (result) {
+          setGuardians(result);
+        } else {
+          setGuardians([]); // 안전한 fallback
+        }
+      } catch (error) {
+        console.error('피보호자 정보 조회 실패:', error);
+        setGuardians([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGuardians();
+  }, []);
 
   const handleEdit = (guardian) => {
-    alert(`${guardian.name} 수정 기능은 추후 추가됩니다!`);
+    alert(`수정 기능은 추후 추가됩니다!`);
   };
 
-  const handleDelete = (guardian) => {
-    alert(`${guardian.name} 삭제 기능은 추후 추가됩니다!`);
+  const handleDelete = async (guardian) => {
+    Alert.alert(
+      '보호자 삭제',
+      `${guardian.name} 보호자를 정말 삭제하시겠습니까?`,
+      [
+        {
+          text: '취소',
+          style: 'cancel',
+        },
+        {
+          text: '삭제',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteUserLink({ dependentId: guardian.id });
+              // 성공 시 로컬 상태에서 삭제
+              setGuardians((prev) => prev.filter((g) => g.id !== guardian.id));
+              Alert.alert('삭제 완료', `${guardian.name} 보호자가 삭제되었습니다.`);
+            } catch (error) {
+              console.error('삭제 실패:', error);
+              Alert.alert('오류', '보호자 삭제에 실패했습니다.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const renderGuardian = ({ item }) => (
@@ -38,14 +86,19 @@ const GuardianManageScreen = () => {
       <Text style={styles.title}>보호자 관리</Text>
       <Text style={styles.subtitle}>등록된 보호자를 확인하고 관리하세요.</Text>
 
-      {guardians.length === 0 ? (
+      {loading ? (
+        <View style={styles.emptyState}>
+          <ActivityIndicator size="large" color="orange" />
+          <Text>불러오는 중...</Text>
+        </View>
+      ) : guardians.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyText}>😕 등록된 보호자가 없습니다.</Text>
         </View>
       ) : (
         <FlatList
           data={guardians}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(_, index) => index.toString()}
           renderItem={renderGuardian}
           contentContainerStyle={styles.listContainer}
         />
@@ -62,6 +115,7 @@ const GuardianManageScreen = () => {
 };
 
 export default GuardianManageScreen;
+
 
 const styles = StyleSheet.create({
   container: {

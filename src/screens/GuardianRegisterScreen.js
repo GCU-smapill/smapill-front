@@ -1,16 +1,37 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Directions } from 'react-native-gesture-handler';
+import { postUserLink } from '../apis/userLinkAPI'; // 경로에 맞게 수정하세요
 
 const GuardianRegisterScreen = () => {
   const navigation = useNavigation();
   const [guardianId, setGuardianId] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = () => {
-    // 나중에 로그인 기능 연결 예정
-    alert('보호자 등록 기능은 추후 구현됩니다!');
+  const handleRegister = async () => {
+    if (!guardianId || !password) {
+      Alert.alert('입력 오류', '보호자 ID와 비밀번호를 모두 입력해주세요.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await postUserLink({ userId: guardianId, password });
+      console.log('보호자 연동 성공:', response);
+
+      Alert.alert('성공', '보호자 계정이 성공적으로 연동되었습니다.', [
+        {
+          text: '확인',
+          onPress: () => navigation.goBack(), // 또는 navigate('GuardianManage')
+        },
+      ]);
+    } catch (error) {
+      console.error('보호자 연동 실패:', error);
+      Alert.alert('실패', '보호자 연동에 실패했습니다. 아이디/비밀번호를 다시 확인해주세요.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -23,6 +44,7 @@ const GuardianRegisterScreen = () => {
         placeholder="보호자 ID"
         value={guardianId}
         onChangeText={setGuardianId}
+        autoCapitalize="none"
       />
       <TextInput
         style={styles.input}
@@ -32,17 +54,16 @@ const GuardianRegisterScreen = () => {
         onChangeText={setPassword}
       />
 
-      <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
-        <Text style={styles.registerButtonText}>보호자 등록하기</Text>
+      <TouchableOpacity style={styles.registerButton} onPress={handleRegister} disabled={loading}>
+        <Text style={styles.registerButtonText}>{loading ? '등록 중...' : '보호자 등록하기'}</Text>
       </TouchableOpacity>
-      
-      <View style={{display:"flex", flexDirection:"row", justifyContent:"center", marginTop: 10}}>
+
+      <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 10 }}>
         <Text style={styles.explainingText}>보호자 계정이 없으신가요? </Text>
-        <TouchableOpacity onPress={() => alert('회원가입 페이지로 이동 예정!')}>
+        <TouchableOpacity onPress={() => Alert.alert('준비 중', '회원가입 페이지로 이동 예정입니다.')}>
           <Text style={styles.signupText}>회원가입</Text>
         </TouchableOpacity>
       </View>
-
 
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Text style={styles.backButtonText}>← 돌아가기</Text>
@@ -52,6 +73,7 @@ const GuardianRegisterScreen = () => {
 };
 
 export default GuardianRegisterScreen;
+
 
 const styles = StyleSheet.create({
   container: {

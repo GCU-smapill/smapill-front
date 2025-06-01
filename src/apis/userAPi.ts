@@ -11,11 +11,11 @@ export const postSignup = async (
 
 // 로그인 API
 export const postSignin = async (
-    {email, password} :
-    {email : string, password : string}
+    {userId, password} :
+    {userId : string, password : string}
 
 ) => {
-  const { data } = await axiosInstance.post('/user/login',{email, password});
+  const { data } = await axiosInstance.post('/user/login',{userId, password});
   return data;
 };
 

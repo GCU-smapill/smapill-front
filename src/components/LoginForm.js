@@ -8,22 +8,19 @@ import {
 } from 'react-native';
 import useStore from '../store/useStore';
 import { loginAPI } from '../apis/loginAPI';
-import { useNavigation } from '@react-navigation/native';
-import SignUpScreen from '../screens/SignUpScreen';
+import { postSignin } from '../apis/userAPi';
 
 const LoginForm = ({ onSuccess }) => {
-  const login = useStore((state) => state.login);
-  const addUser = useStore((state) => state.addUser)
-  const users = useStore((state) => state.users);
 
-  const navigation = useNavigation();
+  const setToken = useStore((state) => state.setToken);
+  const fetchAndSetUserInfo = useStore((state) => state.fetchAndSetUserInfo);
 
-  const [email, setEmail] = useState('jskim6335@naver.com');
+  const [userId, setId] = useState('jskim6335');
   const [password, setPassword] = useState('6335asdf');
 
-  const handleLogin = async () => {
+  const handleLoginOrigin = async () => {
     try {
-      const res = await loginAPI(email, password);
+      const res = await loginAPI(userId, password);
   
       // 1️⃣ 로그인 상태 저장
       login(res.user);
@@ -41,6 +38,33 @@ const LoginForm = ({ onSuccess }) => {
     }
   };
 
+  const handleLogin = async () => {
+    try {
+      console.log('🚀 로그인 시도:', { userId, password });
+
+      const res = await postSignin({ userId, password });
+
+      const accessToken = res.result.accessToken;
+      console.log('✅ 토큰 수신:', accessToken);
+
+      await setToken(accessToken);
+
+      await fetchAndSetUserInfo();
+
+      // ✅ Zustand에서 저장된 값 바로 확인
+      const state = useStore.getState();
+      console.log('🧾 Zustand 상태 확인:', {
+        accessToken: state.accessToken,
+        loggedInAccount: state.loggedInAccount,
+      });
+
+      onSuccess.onSuccess();
+    } catch (error) {
+      console.error('❌ 로그인 오류:', error);
+      Alert.alert('로그인 실패', error?.response?.data?.message || '아이디 또는 비밀번호를 확인해주세요.');
+    }
+  };
+
   const handleSignUp = () => {
     onSuccess.onSignUp()
   }
@@ -50,8 +74,8 @@ const LoginForm = ({ onSuccess }) => {
       <TextInput
         placeholder="아이디"
         style={styles.input}
-        value={email}
-        onChangeText={setEmail}
+        value={userId}
+        onChangeText={setId}
       />
       <TextInput
         placeholder="비밀번호"
