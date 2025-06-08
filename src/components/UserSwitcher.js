@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import useStore from '../store/useStore';
+import useUserStore from '../store/useUserStore';
 
 const UserSwitcher = ({ onPress }) => {
-  const loggedInAccount = useStore(state => state.loggedInAccount);
-  const users = useStore(state => state.users);
-  const currentUserId = useStore(state => state.currentUserId);
+  const loggedInAccount = useUserStore(state => state.loggedInAccount);
+  const users = useUserStore(state => state.users);
+  const currentUserId = useUserStore(state => state.currentUserId);
 
   // 🔹 현재 복약 대상 유저 판별
   const currentUser = 

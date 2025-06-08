@@ -6,58 +6,44 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import useStore from '../store/useStore';
-import { loginAPI } from '../apis/loginAPI';
+import useUserStore from '../store/useUserStore';
 import { postSignin } from '../apis/userAPi';
 
 const LoginForm = ({ onSuccess }) => {
-
-  const setToken = useStore((state) => state.setToken);
-  const fetchAndSetUserInfo = useStore((state) => state.fetchAndSetUserInfo);
+  const setToken = useUserStore((state) => state.setToken);
+  const fetchAndSetUserInfo = useUserStore((state) => state.fetchAndSetUserInfo);
+  const fetchGuardianUserInfo = useUserStore((state) => state.fetchGuardianUserInfo);
 
   const [userId, setId] = useState('jskim6335');
   const [password, setPassword] = useState('6335asdf');
-
-  const handleLoginOrigin = async () => {
-    try {
-      const res = await loginAPI(userId, password);
-  
-      // 1️⃣ 로그인 상태 저장
-      login(res.user);
-  
-      // 2️⃣ users 배열에 사용자 추가 (중복 방지)
-      const exists = users.find(u => u.id === res.user.id);
-      if (!exists) {
-        addUser(res.user);   // user 객체 그대로 추가
-      }
-  
-      // 3️⃣ 성공 콜백 실행
-      onSuccess.onSuccess();
-    } catch (error) {
-      Alert.alert('로그인 실패', error.message);
-    }
-  };
 
   const handleLogin = async () => {
     try {
       console.log('🚀 로그인 시도:', { userId, password });
 
+      // 1️⃣ 로그인 API 요청
       const res = await postSignin({ userId, password });
-
       const accessToken = res.result.accessToken;
       console.log('✅ 토큰 수신:', accessToken);
 
+      // 2️⃣ accessToken 저장
       await setToken(accessToken);
 
+      // 3️⃣ 유저 정보 상태 저장 (로그인 계정)
       await fetchAndSetUserInfo();
 
-      // ✅ Zustand에서 저장된 값 바로 확인
-      const state = useStore.getState();
+      // 4️⃣ 피보호자 정보도 users 배열에 추가
+      await fetchGuardianUserInfo();
+
+      // 5️⃣ 상태 확인 로그 (선택)
+      const state = useUserStore.getState();
       console.log('🧾 Zustand 상태 확인:', {
         accessToken: state.accessToken,
-        loggedInAccount: state.loggedInAccount,
+        loggedInUserInfo: state.loggedInUserInfo,
+        users: state.users,
       });
 
+      // 6️⃣ 로그인 성공 콜백 실행
       onSuccess.onSuccess();
     } catch (error) {
       console.error('❌ 로그인 오류:', error);
@@ -66,8 +52,8 @@ const LoginForm = ({ onSuccess }) => {
   };
 
   const handleSignUp = () => {
-    onSuccess.onSignUp()
-  }
+    onSuccess.onSignUp();
+  };
 
   return (
     <>

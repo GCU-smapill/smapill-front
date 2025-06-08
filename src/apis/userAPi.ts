@@ -2,10 +2,10 @@ import { axiosInstance } from './axiosInstance';
 
 // 회원가입 API
 export const postSignup = async (
-    {userId, name, email, password} : 
-    {userId : string, name : string, email : string, password : string}
+    {userId, name, email, password, phoneNumber} : 
+    {userId : string, name : string, email : string, password : string, phoneNumber : string}
 ) => {
-  const { data } = await axiosInstance.post('/user/signup',{userId, name, email, password});
+  const { data } = await axiosInstance.post('/user/signup',{userId, name, email, password, phoneNumber});
   return data;
 };
 
@@ -31,10 +31,8 @@ export const postLogout = async (
 
 // 회원탈퇴 API
 export const deleteUserInfo = async (
-    { Authorization, reason } : 
-    { Authorization : string, reason : string}
 ) => {
-  const { data } = await axiosInstance.post('/user/delete', {Authorization, reason});
+  const { data } = await axiosInstance.post('/user/delete');
   return data;
 };
 

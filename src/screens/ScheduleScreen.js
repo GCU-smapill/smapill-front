@@ -8,7 +8,7 @@ import UserSelectDropdown from '../modals/UserSelectDropdown';
 import DaySelector from '../components/DaySelector';
 import WeekNavigator from '../components/WeekNavigator';
 import MedicationList from '../components/MedicationList';
-import useStore from '../store/useStore';
+import useUserStore from '../store/useUserStore';
 
 moment.locale('ko');
 
@@ -18,11 +18,12 @@ const ScheduleScreen = () => {
   const [currentDate, setCurrentDate] = useState(today);
   const [weekDays, setWeekDays] = useState(getWeekDays(today));
   const [isUserModalVisible, setUserModalVisible] = useState(false);
+  
 
   // ✅ Zustand 상태 가져오기
-  const loggedInAccount = useStore(state => state.loggedInAccount);
-  const users = useStore(state => state.users);
-  const currentUserId = useStore(state => state.currentUserId);
+  const loggedInAccount = useUserStore(state => state.loggedInAccount);
+  const users = useUserStore(state => state.users);
+  const currentUserId = useUserStore(state => state.currentUserId);
 
   // 🔹 현재 복약 대상 유저 결정
   const currentUser = 
@@ -35,6 +36,8 @@ const ScheduleScreen = () => {
     setCurrentDate(newDate);
     setWeekDays(getWeekDays(newDate));
   };
+
+  console.log("사용자들 정보",users)
 
   return (
     <View style={styles.container}>

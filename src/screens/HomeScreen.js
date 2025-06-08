@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import useStore from '../store/useStore';
+import useUserStore from '../store/useUserStore';
 import UserSwitcher from '../components/UserSwitcher';
 
 const HomeScreen = () => {
-  const loggedInAccount = useStore(state => state.loggedInAccount);
+  const loggedInAccount = useUserStore(state => state.loggedInAccount);
 
   useEffect(() => {
     console.log('📦 loggedInAccount 상태:', loggedInAccount);

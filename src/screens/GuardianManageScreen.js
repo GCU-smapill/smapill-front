@@ -4,11 +4,13 @@ import { useNavigation } from '@react-navigation/native';
 import { getDependentInfo } from '../apis/userLinkAPI'; // 경로는 실제 위치에 맞게 수정
 import { Alert } from 'react-native';
 import { deleteUserLink } from '../apis/userLinkAPI'; // 실제 경로에 맞게 수정
+import useUserStore from '../store/useUserStore';
 
 const GuardianManageScreen = () => {
   const navigation = useNavigation();
   const [guardians, setGuardians] = useState([]);
   const [loading, setLoading] = useState(true);
+  const removeUserById = useUserStore((state) => state.removeUserById);
 
   useEffect(() => {
     const fetchGuardians = async () => {
@@ -35,7 +37,7 @@ const GuardianManageScreen = () => {
   }, []);
 
   const handleEdit = (guardian) => {
-    alert(`수정 기능은 추후 추가됩니다!`);
+    Alert.alert(`수정 기능은 추후 추가됩니다!`);
   };
 
   const handleDelete = async (guardian) => {
@@ -52,7 +54,8 @@ const GuardianManageScreen = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteUserLink({ dependentId: guardian.id });
+              deleteUserLink({ dependentId: guardian.id });
+              removeUserById(guardian.id)
               // 성공 시 로컬 상태에서 삭제
               setGuardians((prev) => prev.filter((g) => g.id !== guardian.id));
               Alert.alert('삭제 완료', `${guardian.name} 보호자가 삭제되었습니다.`);
@@ -68,8 +71,8 @@ const GuardianManageScreen = () => {
 
   const renderGuardian = ({ item }) => (
     <View style={styles.card}>
-      <Text style={styles.name}>👤 {item.name}</Text>
-      <Text style={styles.phone}>📞 {item.phone}</Text>
+      <Text style={styles.name}>👤  {item.name}</Text>
+      <Text style={styles.phone}>📞  {item.phoneNumber.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3")}</Text>
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(item)}>
           <Text style={styles.editText}>✏️ 수정</Text>
@@ -106,7 +109,7 @@ const GuardianManageScreen = () => {
 
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => navigation.navigate('GuardianRegister')}
+        onPress={() => navigation.replace('GuardianRegister')}
       >
         <Text style={styles.addButtonText}>+ 보호자 추가하기</Text>
       </TouchableOpacity>
@@ -148,13 +151,16 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   name: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
+    padding: 5,
+    paddingTop: 0,
   },
   phone: {
-    fontSize: 16,
+    fontSize: 20,
     color: '#555',
-    marginVertical: 5,
+    padding: 5,
+    paddingTop: 0,
   },
   buttonRow: {
     flexDirection: 'row',
@@ -166,12 +172,12 @@ const styles = StyleSheet.create({
   },
   editText: {
     color: '#007BFF',
-    fontSize: 16,
+    fontSize: 18,
   },
   deleteButton: {},
   deleteText: {
     color: '#FF4D4F',
-    fontSize: 16,
+    fontSize: 18,
   },
   emptyState: {
     flex: 1,

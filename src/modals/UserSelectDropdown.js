@@ -2,15 +2,16 @@
 
 import { useState } from "react"
 import { View, Text, TouchableOpacity, TextInput, FlatList, StyleSheet } from "react-native"
-import useStore from "../store/useStore"
+import useUserStore from "../store/useUserStore"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
 
 const UserSelectDropdown = ({ onClose }) => {
-  const loggedInAccount = useStore((state) => state.loggedInAccount)
-  const users = useStore((state) => state.users)
-  const currentUserId = useStore((state) => state.currentUserId)
-  const setCurrentUser = useStore((state) => state.setCurrentUser)
-  const addUser = useStore((state) => state.addUser)
+  const loggedInAccount = useUserStore((state) => state.loggedInAccount)
+  const users = useUserStore((state) => state.users)
+  const currentUserId = useUserStore((state) => state.currentUserId)
+  const setCurrentUser = useUserStore((state) => state.setCurrentUser)
+  const setCurrentUserName = useUserStore((state) => state.setCurrentUserName)
+  const addUser = useUserStore((state) => state.addUser)
 
   const [newUserName, setNewUserName] = useState("")
   const [isSearching, setIsSearching] = useState(false)
@@ -18,8 +19,9 @@ const UserSelectDropdown = ({ onClose }) => {
 
   if (!loggedInAccount) return null
 
-  const handleUserChange = (id) => {
+  const handleUserChange = (id, name) => {
     setCurrentUser(id)
+    setCurrentUserName(name)
     onClose()
   }
 
@@ -30,10 +32,6 @@ const UserSelectDropdown = ({ onClose }) => {
       onClose()
     }
   }
-
-  const filteredUsers = searchQuery
-    ? users.filter((user) => user.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : users
 
   return (
     <View style={styles.dropdown}>
@@ -69,14 +67,14 @@ const UserSelectDropdown = ({ onClose }) => {
       )}
 
       <FlatList
-        data={filteredUsers}
+        data={users}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => {
           const isActive = item.id === currentUserId
           return (
             <TouchableOpacity
               style={[styles.userItem, isActive && styles.activeItem]}
-              onPress={() => handleUserChange(item.id)}
+              onPress={() => handleUserChange(item.id, item.name)}
             >
               <View style={styles.userInfo}>
                 <View style={styles.avatar}>

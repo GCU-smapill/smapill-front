@@ -11,10 +11,12 @@ export const postUserLink = async (
 
 // 피보호자 삭제 API
 export const deleteUserLink = async (
-    {dependentId } :
-    {dependentId : number}
+    { dependentId } :
+    { dependentId : number}
 ) => {
-  const { data } = await axiosInstance.post('/userLink/', { dependentId });
+  const { data } = await axiosInstance.delete(`/userLink/dependent/${dependentId.toString()}`, { 
+    params: { dependentId } 
+  });
   return data;
 };
 

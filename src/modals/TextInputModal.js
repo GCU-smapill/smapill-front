@@ -16,6 +16,8 @@ import { Calendar } from 'react-native-calendars';
 import useScheduleStore from '../store/useScheduleStore';
 import PushNotification from 'react-native-push-notification';
 import { useNavigation } from '@react-navigation/native';
+import { postSchedule } from '../apis/scheduleAPI'; // 실제 경로에 맞게 수정
+import useUserStore from '../store/useUserStore';
 
 const timeSlotToHour = {
   wakeUp: 7,
@@ -37,70 +39,53 @@ const TextInputModal = () => {
   const medicineSchedule = useScheduleStore((state) => state.medicineSchedule);
   const updateMedicineSchedule = useScheduleStore((state) => state.updateMedicineSchedule);
 
-  const timeOptions = ['wakeUp', 'morning', 'noon', 'evening', 'bedTime'];
+  const timeOptions = ['UPON_WAKING', 'MORNING', 'AFTERNOON', 'EVENING', 'BEFORE_BED'];
 
   const getKoreanLabel = (time) => {
     const labels = {
-      wakeUp: '기상직후',
-      morning: '아침',
-      noon: '점심',
-      evening: '저녁',
-      bedTime: '취침전',
+      UPON_WAKING: '기상직후',
+      MORNING: '아침',
+      AFTERNOON: '점심',
+      EVENING: '저녁',
+      BEFORE_BED: '취침전',
     };
     return labels[time] || '';
   };
 
   const formatDate = (date) => new Date(date).toISOString().split('T')[0];
 
-  const getDatesBetween = (start, end) => {
-    const dates = [];
-    let currentDate = new Date(start);
-    const finalDate = new Date(end);
-    while (currentDate <= finalDate) {
-      dates.push(new Date(currentDate));
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-    return dates;
-  };
+  const currentUserId = useUserStore((state) => state.currentUserId); // ✅ 현재 유저 ID
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!medicineName || selectedTimeOptions.length === 0 || !doseCount) {
       alert('모든 필드를 입력해주세요.');
       return;
     }
 
-    const allDates = getDatesBetween(startDate, endDate);
-    const newSchedule = { ...medicineSchedule };
+    if (!currentUserId) {
+      alert('로그인된 사용자 정보가 없습니다.');
+      return;
+    }
 
-    allDates.forEach((dateObj) => {
-      const formattedDate = formatDate(dateObj);
-      if (!newSchedule[formattedDate]) newSchedule[formattedDate] = {};
-
-      selectedTimeOptions.forEach((time) => {
-        if (!newSchedule[formattedDate][time]) newSchedule[formattedDate][time] = [];
-
-        const medicineEntry = {
-          id: new Date().getTime() + Math.random(),
-          medicineName,
-          isTaken: false,
-          dose: doseCount,
-        };
-
-        newSchedule[formattedDate][time].push(medicineEntry);
-
-        PushNotification.localNotificationSchedule({
-          channelId: 'medicine-reminder',
-          title: '복약 알림',
-          message: `${medicineName} 복용할 시간입니다.`,
-          date: new Date(dateObj.setHours(timeSlotToHour[time], 0, 0)),
-          allowWhileIdle: true,
-        });
+    try {
+      const data = postSchedule({
+        userId: currentUserId,
+        name: medicineName,
+        startDate: formatDate(startDate), // 예: '2025-06-01'
+        endDate: formatDate(endDate),
+        intakeTimes: selectedTimeOptions, // 예: ['morning', 'evening']
+        dosage: doseCount,
       });
-    });
 
-    updateMedicineSchedule(newSchedule);
-    navigation.goBack();
+      console.log("생성된 데이터 확인 : ", data)
+      alert('복용 일정이 성공적으로 저장되었습니다!');
+      navigation.navigate("MainTabs");
+    } catch (error) {
+      console.error('❌ 복용 일정 저장 실패:', error);
+      alert('복용 일정 저장에 실패했습니다. 다시 시도해주세요.');
+    }
   };
+
 
   const validateStep = () => {
     if (currentStep === 1 && medicineName.trim().length === 0) {

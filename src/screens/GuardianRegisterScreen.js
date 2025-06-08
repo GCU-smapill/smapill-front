@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { postUserLink } from '../apis/userLinkAPI'; // 경로에 맞게 수정하세요
+import { postUserLink } from '../apis/userLinkAPI';
+import useUserStore from '../store/useUserStore';
 
 const GuardianRegisterScreen = () => {
   const navigation = useNavigation();
+  const fetchGuardianUserInfo = useUserStore((state) => state.fetchGuardianUserInfo);
   const [guardianId, setGuardianId] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,11 +21,15 @@ const GuardianRegisterScreen = () => {
       setLoading(true);
       const response = await postUserLink({ userId: guardianId, password });
       console.log('보호자 연동 성공:', response);
+      await fetchGuardianUserInfo()
 
       Alert.alert('성공', '보호자 계정이 성공적으로 연동되었습니다.', [
         {
           text: '확인',
-          onPress: () => navigation.goBack(), // 또는 navigate('GuardianManage')
+          onPress: () => {
+            navigation.replace('GuardianManage')
+          
+          }
         },
       ]);
     } catch (error) {
@@ -65,7 +71,7 @@ const GuardianRegisterScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.replace('GuardianManage')}>
         <Text style={styles.backButtonText}>← 돌아가기</Text>
       </TouchableOpacity>
     </View>
