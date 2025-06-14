@@ -14,8 +14,8 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Calendar } from 'react-native-calendars';
-import useScheduleStore from '../store/useScheduleStore';
-import PushNotification from 'react-native-push-notification';
+import { useRoute } from '@react-navigation/native';
+import { useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { postSchedule } from '../apis/scheduleAPI'; // 실제 경로에 맞게 수정
 import useUserStore from '../store/useUserStore';
@@ -28,7 +28,7 @@ const timeSlotToHour = {
   bedTime: 22,
 };
 
-const TextInputModal = () => {
+const CameraInputModal = () => {
   const navigation = useNavigation();
   const [currentStep, setCurrentStep] = useState(1);
   const [medicineName, setMedicineName] = useState('');
@@ -37,10 +37,10 @@ const TextInputModal = () => {
   const [endDate, setEndDate] = useState(new Date());
   const [selectedTimeOptions, setSelectedTimeOptions] = useState([]);
 
-  const medicineSchedule = useScheduleStore((state) => state.medicineSchedule);
-  const updateMedicineSchedule = useScheduleStore((state) => state.updateMedicineSchedule);
-
   const timeOptions = ['UPON_WAKING', 'MORNING', 'AFTERNOON', 'EVENING', 'BEFORE_BED'];
+
+  const route = useRoute();
+  const { ocrData } = route.params || {};
 
   const getKoreanLabel = (time) => {
     const labels = {
@@ -57,14 +57,25 @@ const TextInputModal = () => {
 
   const currentUserId = useUserStore((state) => state.currentUserId); // ✅ 현재 유저 ID
 
+  // OCR 데이터가 들어오면 set으로 상태 초기화
+  useEffect(() => {
+    if (ocrData) {
+      if (ocrData.medicineName) setMedicineName(ocrData.medicineName);
+      if (ocrData.dose) setDoseCount(String(ocrData.dose));
+      if (ocrData.startDate) setStartDate(new Date(ocrData.startDate));
+      if (ocrData.endDate) setEndDate(new Date(ocrData.endDate));
+      if (ocrData.intakeTimes) setSelectedTimeOptions(ocrData.intakeTimes);
+    }
+  }, [ocrData]);
+
   const handleSave = async () => {
     if (!medicineName || selectedTimeOptions.length === 0 || !doseCount) {
-      Alert.alert('내용 누락','모든 필드를 입력해주세요.');
+      Alert.alert('내용 누락!','모든 필드를 입력해주세요.');
       return;
     }
 
     if (!currentUserId) {
-      Alert.alert('사용자 정보 없음','로그인된 사용자 정보가 없습니다.');
+      Alert.alert("사용자 정보 없음",'로그인된 사용자 정보가 없습니다.');
       return;
     }
 
@@ -79,11 +90,11 @@ const TextInputModal = () => {
       });
 
       console.log("생성된 데이터 확인 : ", data)
-      Alert.alert('일정 생성 성공','복용 일정이 성공적으로 저장되었습니다!');
+      Alert.alert('일정 저장 성공','복용 일정이 성공적으로 저장되었습니다!');
       navigation.navigate("MainTabs");
     } catch (error) {
       console.error('❌ 복용 일정 저장 실패:', error);
-      Alert.alert('일정 생성 실패','복용 일정 저장에 실패했습니다. 다시 시도해주세요.');
+      Alert.alert('일정 저장 실패','복용 일정 저장에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -240,7 +251,7 @@ const TextInputModal = () => {
   );
 };
 
-export default TextInputModal;
+export default CameraInputModal;
 
 const styles = StyleSheet.create({
   pageContainer: {

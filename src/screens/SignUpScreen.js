@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { postSignup } from '../apis/userAPi';
 
 const SignUpScreen = ({ navigation }) => {
@@ -68,15 +68,15 @@ const SignUpScreen = ({ navigation }) => {
       });
 
       console.log("✅ 서버 응답 데이터:", response);
-      alert("회원가입 성공! 로그인 페이지로 이동합니다.");
+      Alert.alert("회원가입 성공!" ,"로그인 페이지로 이동합니다.");
       navigation.navigate('Login');
     } catch (error) {
       if (error.response?.status === 409) {
-        alert('이미 존재하는 이메일 또는 아이디입니다.');
+        Alert.alert('이미 존재하는 이메일 또는 아이디입니다.');
       }
 
       console.log("회원가입 실패", error);
-      alert("회원가입 실패! 다시 시도해주세요.");
+      Alert.alert("회원가입 실패!","다시 시도해주세요.");
     }
   };
 

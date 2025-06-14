@@ -37,7 +37,7 @@ const GuardianManageScreen = () => {
   }, []);
 
   const handleEdit = (guardian) => {
-    Alert.alert(`수정 기능은 추후 추가됩니다!`);
+    Alert.alert("공사중!",`수정 기능은 추후 추가됩니다!`);
   };
 
   const handleDelete = async (guardian) => {

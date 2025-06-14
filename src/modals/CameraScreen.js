@@ -19,7 +19,6 @@ const CameraScreen = () => {
   const [hasPermission, setHasPermission] = useState(false);
   const cameraRef = useRef(null);
 
-  const { updateMedicineSchedule } = useScheduleStore();
   const token = useAuthStore((state) => state.token);
   const device = useCameraDevice('back');
 
@@ -63,6 +62,7 @@ const CameraScreen = () => {
         type: 'image/png',
       });
 
+      /*
       const uploadResponse = await fetch('http://134.185.109.176:5000/upload', {
         method: 'POST',
         body: formData,
@@ -100,9 +100,21 @@ const CameraScreen = () => {
           });
         });
       });
-
-      updateMedicineSchedule(newSchedule);
-      navigation.goBack();   // ✅ 촬영 및 처리 완료 후 이전 화면으로 이동
+      */
+      navigation.navigate('CameraInputModal', {
+        ocrData : 
+          {
+            medicineName: "목감기약",
+            dose: 3,
+            startDate : "2025-06-15",
+            endDate : "2025-06-18",
+            intakeTimes : [
+              "MORNING",
+              "AFTERNOON",
+              "EVENING",
+            ]
+          }
+      });
     } catch (err) {
       console.error(err);
       Alert.alert('오류 발생', '사진 촬영 또는 업로드 중 문제가 발생했습니다.');
