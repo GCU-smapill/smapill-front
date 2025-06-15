@@ -62,16 +62,14 @@ const CameraScreen = () => {
         type: 'image/png',
       });
 
-      /*
+      
       const uploadResponse = await fetch('http://134.185.109.176:5000/upload', {
         method: 'POST',
         body: formData,
       });
 
       const uploadData = await uploadResponse.json();
-      if (uploadData.message !== null) {
-        Alert.alert('업로드 성공', '사진이 성공적으로 업로드되었습니다.');
-      } else {
+      if (uploadData.message === null) {
         Alert.alert('업로드 실패', uploadData.message);
       }
 
@@ -82,38 +80,10 @@ const CameraScreen = () => {
         },
       });
 
-      const ocrData = await ocrResponse.json();
-
-      const newSchedule = {};
-      ocrData.forEach((medicine) => {
-        const allDates = getDatesBetween(medicine.dates[0], medicine.dates[1]);
-        allDates.forEach((date) => {
-          if (!newSchedule[date]) newSchedule[date] = {};
-          medicine.timeOptions.forEach((time) => {
-            if (!newSchedule[date][time]) newSchedule[date][time] = [];
-            newSchedule[date][time].push({
-              id: new Date().getTime() + Math.random(),
-              medicineName: medicine.medicineName,
-              isTaken: false,
-              dose: medicine.dose,
-            });
-          });
-        });
-      });
-      */
+      const Data = await ocrResponse.json();
+      
       navigation.navigate('CameraInputModal', {
-        ocrData : 
-          {
-            medicineName: "목감기약",
-            dose: 3,
-            startDate : "2025-06-15",
-            endDate : "2025-06-18",
-            intakeTimes : [
-              "MORNING",
-              "AFTERNOON",
-              "EVENING",
-            ]
-          }
+        ocrData : Data
       });
     } catch (err) {
       console.error(err);

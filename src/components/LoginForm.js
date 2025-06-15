@@ -14,8 +14,8 @@ const LoginForm = ({ onSuccess }) => {
   const fetchAndSetUserInfo = useUserStore((state) => state.fetchAndSetUserInfo);
   const fetchGuardianUserInfo = useUserStore((state) => state.fetchGuardianUserInfo);
 
-  const [userId, setId] = useState('jskim6335');
-  const [password, setPassword] = useState('6335asdf');
+  const [userId, setId] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
     try {
@@ -46,7 +46,6 @@ const LoginForm = ({ onSuccess }) => {
       // 6️⃣ 로그인 성공 콜백 실행
       onSuccess.onSuccess();
     } catch (error) {
-      console.error('❌ 로그인 오류:', error);
       Alert.alert('로그인 실패', error?.response?.data?.message || '아이디 또는 비밀번호를 확인해주세요.');
     }
   };

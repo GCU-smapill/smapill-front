@@ -31,8 +31,8 @@ const timeSlotToHour = {
 const CameraInputModal = () => {
   const navigation = useNavigation();
   const [currentStep, setCurrentStep] = useState(1);
-  const [medicineName, setMedicineName] = useState('');
-  const [doseCount, setDoseCount] = useState('');
+  const [medicines, setMedicines] = useState([]);
+  const [doseCount, setDoseCount] = useState([]);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [selectedTimeOptions, setSelectedTimeOptions] = useState([]);
@@ -50,7 +50,7 @@ const CameraInputModal = () => {
       EVENING: '저녁',
       BEFORE_BED: '취침전',
     };
-    return labels[time] || '';
+    return labels[time] || ''; //
   };
 
   const formatDate = (date) => new Date(date).toISOString().split('T')[0];
@@ -60,8 +60,8 @@ const CameraInputModal = () => {
   // OCR 데이터가 들어오면 set으로 상태 초기화
   useEffect(() => {
     if (ocrData) {
-      if (ocrData.medicineName) setMedicineName(ocrData.medicineName);
-      if (ocrData.dose) setDoseCount(String(ocrData.dose));
+      if (ocrData.medicines) setMedicines(ocrData.medicines);
+      if (ocrData.dose) setDoseCount(ocrData.dose);
       if (ocrData.startDate) setStartDate(new Date(ocrData.startDate));
       if (ocrData.endDate) setEndDate(new Date(ocrData.endDate));
       if (ocrData.intakeTimes) setSelectedTimeOptions(ocrData.intakeTimes);
@@ -69,7 +69,7 @@ const CameraInputModal = () => {
   }, [ocrData]);
 
   const handleSave = async () => {
-    if (!medicineName || selectedTimeOptions.length === 0 || !doseCount) {
+    if (!medicines || selectedTimeOptions.length === 0 || !doseCount) {
       Alert.alert('내용 누락!','모든 필드를 입력해주세요.');
       return;
     }
@@ -80,16 +80,20 @@ const CameraInputModal = () => {
     }
 
     try {
-      const data = postSchedule({
-        userId: currentUserId,
-        name: medicineName,
-        startDate: formatDate(startDate), // 예: '2025-06-01'
-        endDate: formatDate(endDate),
-        intakeTimes: selectedTimeOptions, // 예: ['morning', 'evening']
-        dosage: doseCount,
-      });
+      await Promise.all(
+        medicines.map((name, index) => {
+          const dose = doseCount?.[index] ?? '';
+          return postSchedule({
+            userId: currentUserId,
+            name: name,
+            startDate: formatDate(startDate),
+            endDate: formatDate(endDate),
+            intakeTimes: selectedTimeOptions,
+            dosage: String(dose),
+          });
+        })
+      );
 
-      console.log("생성된 데이터 확인 : ", data)
       Alert.alert('일정 저장 성공','복용 일정이 성공적으로 저장되었습니다!');
       navigation.navigate("MainTabs");
     } catch (error) {
@@ -100,18 +104,27 @@ const CameraInputModal = () => {
 
 
   const validateStep = () => {
-    if (currentStep === 1 && medicineName.trim().length === 0) {
-      return '약 이름을 입력해주세요.';
-    }
-    if (currentStep === 2) {
-      const dose = Number(doseCount);
-      if (!doseCount || isNaN(dose) || dose <= 0) {
-        return '복용 횟수를 숫자로 입력해주세요.';
+    if (currentStep === 1) {
+      if (medicines.some((name) => name.trim().length === 0)) {
+        return '모든 약 이름을 입력해주세요.';
       }
     }
+
+    if (currentStep === 2) {
+      if (
+        doseCount.some(
+          (d) =>
+            !d || isNaN(Number(d)) || Number(d) <= 0
+        )
+      ) {
+        return '복용량은 1 이상의 숫자로 입력해주세요.';
+      }
+    }
+
     if (currentStep === 5 && selectedTimeOptions.length === 0) {
       return '복용 시간을 하나 이상 선택해주세요.';
     }
+
     return null;
   };
 
@@ -125,25 +138,39 @@ const CameraInputModal = () => {
         return (
           <>
             <Text style={styles.label}>1단계: 약 이름 입력</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="예: 감기약"
-              value={medicineName}
-              onChangeText={setMedicineName}
-            />
+            {medicines.map((med, index) => (
+              <TextInput
+                key={index}
+                style={styles.input}
+                placeholder={`예: 감기약 (${index + 1})`}
+                value={med}
+                onChangeText={(text) => {
+                  const newMeds = [...medicines];
+                  newMeds[index] = text;
+                  setMedicines(newMeds);
+                }}
+              />
+            ))}
           </>
         );
       case 2:
         return (
           <>
             <Text style={styles.label}>2단계: 복용량 입력 (알)</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="예: 3"
-              keyboardType="numeric"
-              value={doseCount}
-              onChangeText={setDoseCount}
-            />
+            {doseCount.map((value, index) => (
+              <TextInput
+                key={index}
+                style={styles.input}
+                placeholder={`예: 3 (${index + 1})`}
+                keyboardType="numeric"
+                value={String(value)}
+                onChangeText={(text) => {
+                  const newDose = [...dose];
+                  newDose[index] = text;
+                  setDose(newDose);
+                }}
+              />
+            ))}
           </>
         );
       case 3:

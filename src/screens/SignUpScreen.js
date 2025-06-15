@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Platform,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert } from 'react-native';
 import { postSignup } from '../apis/userAPi';
 
 const SignUpScreen = ({ navigation }) => {
@@ -81,78 +92,86 @@ const SignUpScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>회원 가입</Text>
-      <Text style={styles.subtitle}>Smapill 사용을 위해 계정을 생성해주세요.</Text>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          contentContainerStyle={styles.TotalContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            <Text style={styles.title}>회원 가입</Text>
+            <Text style={styles.subtitle}>Smapill 사용을 위해 계정을 생성해주세요.</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="아이디"
-        value={userId}
-        onChangeText={setUserId}
-        onBlur={validate}
-      />
-      {errors.userId !== '' && <Text style={styles.errorText}>{errors.userId}</Text>}
+            <TextInput
+              style={styles.input}
+              placeholder="아이디"
+              value={userId}
+              onChangeText={setUserId}
+              onBlur={validate}
+            />
+            {errors.userId !== '' && <Text style={styles.errorText}>{errors.userId}</Text>}
 
-      <TextInput
-        style={styles.input}
-        placeholder="이름 (한글)"
-        value={name}
-        onChangeText={setName}
-        onBlur={validate}
-      />
-      {errors.name !== '' && <Text style={styles.errorText}>{errors.name}</Text>}
+            <TextInput
+              style={styles.input}
+              placeholder="이름 (한글)"
+              value={name}
+              onChangeText={setName}
+              onBlur={validate}
+            />
+            {errors.name !== '' && <Text style={styles.errorText}>{errors.name}</Text>}
 
-      <TextInput
-        style={styles.input}
-        placeholder="이메일 주소"
-        value={email}
-        onChangeText={setEmail}
-        onBlur={validate}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      {errors.email !== '' && <Text style={styles.errorText}>{errors.email}</Text>}
+            <TextInput
+              style={styles.input}
+              placeholder="이메일 주소"
+              value={email}
+              onChangeText={setEmail}
+              onBlur={validate}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            {errors.email !== '' && <Text style={styles.errorText}>{errors.email}</Text>}
 
-      <TextInput
-        style={styles.input}
-        placeholder="비밀번호"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-        onBlur={validate}
-      />
-      {errors.password !== '' && <Text style={styles.errorText}>{errors.password}</Text>}
+            <TextInput
+              style={styles.input}
+              placeholder="비밀번호"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+              onBlur={validate}
+            />
+            {errors.password !== '' && <Text style={styles.errorText}>{errors.password}</Text>}
 
-      <TextInput
-        style={styles.input}
-        placeholder="휴대폰 번호 (예: 01012345678)"
-        value={phoneNumber}
-        onChangeText={setPhoneNumber}
-        keyboardType="number-pad"
-        onBlur={validate}
-      />
-      {errors.phoneNumber !== '' && <Text style={styles.errorText}>{errors.phoneNumber}</Text>}
+            <TextInput
+              style={styles.input}
+              placeholder="휴대폰 번호 (예: 01012345678)"
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              keyboardType="number-pad"
+              onBlur={validate}
+            />
+            {errors.phoneNumber !== '' && <Text style={styles.errorText}>{errors.phoneNumber}</Text>}
 
-      <TouchableOpacity 
-        style={[styles.registerButton, !isValid && { backgroundColor: '#ccc' }]}
-        onPress={handleRegister}
-        disabled={!isValid}
-      >
-        <Text style={styles.registerButtonText}>사용자 등록하기</Text>
-      </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.registerButton, !isValid && { backgroundColor: '#ccc' }]}
+              onPress={handleRegister}
+              disabled={!isValid}
+            >
+              <Text style={styles.registerButtonText}>사용자 등록하기</Text>
+            </TouchableOpacity>
 
-      <View style={styles.footer}>
-        <Text style={styles.explainingText}>이미 계정이 있으신가요? </Text>
-        <TouchableOpacity onPress={() => alert('계정 찾기 기능 준비 중')}>
-          <Text style={styles.signupText}>계정 찾기</Text>
-        </TouchableOpacity>
-      </View>
+            <View style={styles.footer}>
+              <Text style={styles.explainingText}>이미 계정이 있으신가요? </Text>
+              <TouchableOpacity onPress={() => alert('계정 찾기 기능 준비 중')}>
+                <Text style={styles.signupText}>계정 찾기</Text>
+              </TouchableOpacity>
+            </View>
 
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backButtonText}>← 돌아가기</Text>
-      </TouchableOpacity>
-    </View>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+              <Text style={styles.backButtonText}>← 돌아가기</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+
   );
 };
 
@@ -160,6 +179,10 @@ export default SignUpScreen;
 
 
 const styles = StyleSheet.create({
+  TotalContainer: {
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     padding: 30,

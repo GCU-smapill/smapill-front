@@ -27,7 +27,11 @@ const getKoreanLabel = (time) => {
 
 const MedicationReminderView = ({ time, date, medications, onToggleTaken, onDelete }) => {
   const currentUserId = useUserStore((state) => state.currentUserId); // ✅ 현재 유저 ID 사용
-  
+  const truncate = (text, maxLength = 10) => {
+    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+  };
+
+
   return (
     <View style={styles.container}>
       {/* 상단 시간대 */}
@@ -46,7 +50,7 @@ const MedicationReminderView = ({ time, date, medications, onToggleTaken, onDele
             >
               <View style={styles.medicationLeft}>
                 <MaterialCommunityIcons name="pill" style={styles.pillIcon} />
-                <Text style={styles.pillName}>{medication.name}</Text>
+                <Text style={styles.pillName}>{truncate(medication.name,5)}</Text>
               </View>
 
               <View style={styles.medicationRight}>
@@ -100,7 +104,7 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderRadius: 20,
     borderTopLeftRadius: 0,
-    padding: 5,
+    padding: 1,
   },
   medicationWrapper: {
     alignItems: 'center',
@@ -109,8 +113,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    height: 70,
-    padding: 10,
+    height: 80,
+    padding: 5,
   },
   medicationLeft: {
     flex: 1,
@@ -122,16 +126,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   pillIcon: {
-    fontSize: 45,
+    fontSize: 40,
     paddingRight: 7,
+    paddingBottom: 7,
   },
   pillName: {
-    fontSize: 33,
-    fontWeight: "500",
-    paddingBottom: 10,
+    fontSize: 25,
+    fontWeight: "400",
+    maxHeight: "100%",
+    maxWidth: '80%', // 혹은 픽셀값 예: 200
+    overflow: 'hidden',
+    marginBottom: 5,
   },
   pillDose: {
-    fontSize: 30,
+    fontSize: 25,
     fontWeight: "600",
     paddingBottom: 7,
     paddingRight: 7,
